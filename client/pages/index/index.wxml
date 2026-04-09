@@ -1,0 +1,111 @@
+<!-- pages/index/index.wxml -->
+<view class="page-index">
+  <!-- 顶部 Banner -->
+  <view class="hero-banner-wrap">
+    <image class="hero-banner" src="/assets/hero-banner.png" mode="aspectFill" />
+  </view>
+
+  <!-- 搜索卡片 -->
+  <view class="search-card">
+    <!-- 目的地输入 -->
+    <view class="search-input-wrap" bindtap="openCityPicker">
+      <text class="input-icon">📍</text>
+      <view class="search-input-display {{destination ? '' : 'placeholder'}}">
+        {{destination || '你想去哪里？'}}
+      </view>
+      <view class="clear-btn" wx:if="{{destination}}" catchtap="clearDest">✕</view>
+    </view>
+
+    <!-- 日期选择 -->
+    <view class="date-row">
+      <picker mode="date" value="{{startDate}}" start="{{today}}" bindchange="onStartDateChange">
+        <view class="date-pick">
+          <text class="date-label">出发</text>
+          <text class="date-value {{startDate ? '' : 'placeholder'}}">
+            {{startDate || '选择日期'}}
+          </text>
+        </view>
+      </picker>
+      <view class="date-arrow">→</view>
+      <picker mode="date" value="{{endDate}}" start="{{startDate || today}}" bindchange="onEndDateChange">
+        <view class="date-pick">
+          <text class="date-label">返回</text>
+          <text class="date-value {{endDate ? '' : 'placeholder'}}">
+            {{endDate || '选择日期'}}
+          </text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 搜索按钮 -->
+    <view class="search-btn" bindtap="doSearch">
+      <text>🔍 搜索搭子</text>
+    </view>
+  </view>
+
+  <!-- 标签筛选栏 -->
+  <view class="filter-section">
+    <scroll-view class="filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="filter-tags">
+        <view
+          class="filter-tag {{selectedTags.length === 0 ? 'filter-tag-active' : ''}}"
+          bindtap="onFilterAll"
+        >全部</view>
+        <view
+          class="filter-tag {{tagSelectedMap[item] ? 'filter-tag-active' : ''}}"
+          wx:for="{{tagLabels}}"
+          wx:key="*this"
+          bindtap="onFilterTag"
+          data-tag="{{item}}"
+        >{{tagIcons[item]}} {{item}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 结果列表 -->
+  <view class="result-section">
+    <view class="result-header" wx:if="{{searched}}">
+      <text class="result-count">找到 {{total}} 位搭子</text>
+    </view>
+    <view class="result-header" wx:if="{{!searched && trips.length > 0}}">
+      <text class="result-title">🔥 热门推荐</text>
+    </view>
+
+    <!-- 行程卡片列表 -->
+    <block wx:for="{{trips}}" wx:key="_id">
+      <trip-card trip="{{item}}" />
+    </block>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{trips.length === 0 && !loading}}">
+      <text class="empty-icon">{{searched ? '🔍' : '🌍'}}</text>
+      <text class="empty-text">{{searched ? '暂无匹配的搭子，换个条件试试' : '输入目的地开始寻找搭子'}}</text>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading-wrap" wx:if="{{loading}}">
+      <view class="loading-dots">
+        <view class="loading-dot"></view>
+        <view class="loading-dot"></view>
+        <view class="loading-dot"></view>
+      </view>
+      <text class="loading-text">搜索中...</text>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{hasMore && trips.length > 0}}" bindtap="loadMore">
+      <text>加载更多</text>
+    </view>
+    <view class="no-more" wx:if="{{!hasMore && trips.length > 0}}">
+      <text>— 没有更多了 —</text>
+    </view>
+  </view>
+
+  <!-- 城市选择器 -->
+  <city-picker
+    visible="{{showCityPicker}}"
+    value="{{destination}}"
+    bind:select="onCitySelect"
+    bind:close="closeCityPicker"
+  />
+</view>

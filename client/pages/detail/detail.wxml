@@ -1,0 +1,82 @@
+<!-- pages/detail/detail.wxml -->
+<view class="page-detail" wx:if="{{trip}}">
+  <!-- 顶部信息卡 -->
+  <view class="detail-hero">
+    <view class="hero-gradient"></view>
+    <view class="hero-content">
+      <view class="trip-title" wx:if="{{trip.title}}">{{trip.title}}</view>
+      <view class="dest-row">
+        <text class="dest-icon">📍</text>
+        <text class="dest-name">{{trip.destination}}</text>
+      </view>
+      <view class="date-row">
+        <text class="date-icon">📅</text>
+        <text class="date-range">{{startDateText}} — {{endDateText}}</text>
+        <view class="days-badge">{{days}}天</view>
+      </view>
+      <view class="member-row" wx:if="{{trip.maxMembers > 0}}">
+        <text class="member-icon">👥</text>
+        <text class="member-text">{{trip.currentMembers || 1}} / {{trip.maxMembers}} 人</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签 -->
+  <view class="section tags-section">
+    <view class="tag-chip" wx:for="{{trip.tags}}" wx:key="*this">
+      <text>{{tagIcons[item]}} {{item}}</text>
+    </view>
+  </view>
+
+  <!-- 发布者信息 -->
+  <view class="section user-section" bindtap="viewProfile">
+    <image class="user-avatar" src="{{trip.userId.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+    <view class="user-info">
+      <view class="user-name">{{trip.userId.nickname}}</view>
+      <view class="user-meta">
+        <view class="credit-stars">
+          <text class="star-on" wx:for="{{fullStars}}" wx:key="index">★</text>
+          <text class="star-off" wx:for="{{emptyStars}}" wx:key="index">★</text>
+          <text class="credit-num">{{trip.userId.creditScore}}</text>
+        </view>
+        <text class="review-count">{{trip.userId.reviewCount || 0}}条评价</text>
+      </view>
+    </view>
+    <view class="arrow-icon">›</view>
+  </view>
+
+  <!-- 行程描述 -->
+  <view class="section desc-section" wx:if="{{trip.description}}">
+    <view class="section-title">行程描述</view>
+    <view class="desc-content">{{trip.description}}</view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="action-bar safe-bottom" wx:if="{{!isOwner && trip.status === 'active'}}">
+    <view class="action-btn join-btn" bindtap="joinTrip">
+      <text>🙋 申请同行</text>
+    </view>
+    <view class="action-btn chat-btn" bindtap="startChat">
+      <text>💬 私信</text>
+    </view>
+  </view>
+
+  <!-- 自己的行程管理 -->
+  <view class="action-bar safe-bottom" wx:if="{{isOwner}}">
+    <view class="action-btn cancel-btn" bindtap="cancelTrip" wx:if="{{trip.status === 'active'}}">
+      <text>取消行程</text>
+    </view>
+    <view class="action-btn complete-btn" bindtap="completeTrip" wx:if="{{trip.status === 'active'}}">
+      <text>✅ 标记完成</text>
+    </view>
+  </view>
+</view>
+
+<!-- 加载中 -->
+<view class="loading-page" wx:if="{{loading}}">
+  <view class="loading-dots">
+    <view class="loading-dot"></view>
+    <view class="loading-dot"></view>
+    <view class="loading-dot"></view>
+  </view>
+</view>

@@ -1,0 +1,17 @@
+<!-- components/tag-selector/tag-selector.wxml -->
+<view class="tag-selector">
+  <view class="tag-title" wx:if="{{title}}">{{title}}</view>
+  <view class="tag-grid">
+    <view
+      class="tag-btn {{selectedMap[item.key] ? 'tag-btn-active' : ''}}"
+      wx:for="{{tags}}"
+      wx:key="key"
+      bindtap="onToggle"
+      data-key="{{item.key}}"
+      data-label="{{item.label}}"
+    >
+      <text class="tag-btn-icon">{{item.icon}}</text>
+      <text class="tag-btn-label">{{item.label}}</text>
+    </view>
+  </view>
+</view>

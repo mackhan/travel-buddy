@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "旅行搭子",
+  "usingComponents": {
+    "trip-card": "/components/trip-card/trip-card",
+    "tag-selector": "/components/tag-selector/tag-selector",
+    "city-picker": "/components/city-picker/city-picker"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

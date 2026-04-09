@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/publish/publish",
+    "pages/messages/messages",
+    "pages/profile/profile",
+    "pages/detail/detail",
+    "pages/chat/chat",
+    "pages/expense/expense"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#12B7B5",
+    "navigationBarTitleText": "旅行搭子",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F7FA",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#12B7B5",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "发现",
+        "iconPath": "assets/icons/discover.png",
+        "selectedIconPath": "assets/icons/discover-active.png"
+      },
+      {
+        "pagePath": "pages/publish/publish",
+        "text": "发布",
+        "iconPath": "assets/icons/publish.png",
+        "selectedIconPath": "assets/icons/publish-active.png"
+      },
+      {
+        "pagePath": "pages/messages/messages",
+        "text": "消息",
+        "iconPath": "assets/icons/message.png",
+        "selectedIconPath": "assets/icons/message-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/icons/profile.png",
+        "selectedIconPath": "assets/icons/profile-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}

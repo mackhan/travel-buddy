@@ -1,0 +1,109 @@
+/* pages/messages/messages.wxss */
+
+.page-messages {
+  min-height: 100vh;
+  background: #F5F7FA;
+}
+
+.msg-header {
+  padding: 24rpx 32rpx;
+  background: #FFFFFF;
+}
+
+.msg-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1A1A2E;
+}
+
+/* 对话列表 */
+.conversation-list {
+  margin-top: 12rpx;
+  background: #FFFFFF;
+}
+
+.conv-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+  transition: background 0.15s ease;
+}
+
+.conv-item:active {
+  background: #F5F7FA;
+}
+
+.conv-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.conv-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+}
+
+.unread-badge {
+  position: absolute;
+  top: -6rpx;
+  right: -6rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  background: #FF4D4F;
+  color: #FFFFFF;
+  font-size: 20rpx;
+  font-weight: 600;
+  border-radius: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4rpx solid #FFFFFF;
+}
+
+.conv-info {
+  flex: 1;
+  margin-left: 20rpx;
+  overflow: hidden;
+}
+
+.conv-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.conv-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1A1A2E;
+}
+
+.conv-time {
+  font-size: 22rpx;
+  color: #CCCCCC;
+  flex-shrink: 0;
+}
+
+.conv-preview {
+  font-size: 26rpx;
+  color: #999999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+/* 空状态 */
+.empty-state {
+  padding: 120rpx 60rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #CCCCCC;
+  margin-top: 12rpx;
+}

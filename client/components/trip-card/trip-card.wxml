@@ -1,0 +1,48 @@
+<!-- components/trip-card/trip-card.wxml -->
+<view class="trip-card" bindtap="onTap">
+  <!-- 用户信息区 -->
+  <view class="card-header">
+    <image class="user-avatar" src="{{trip.userId.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+    <view class="user-info">
+      <view class="user-name">{{trip.userId.nickname || '旅行者'}}</view>
+      <view class="user-credit">
+        <block wx:for="{{stars}}" wx:key="index">
+          <text class="star-icon {{item ? 'star-filled' : 'star-empty'}}">★</text>
+        </block>
+        <text class="credit-score">{{creditText}}</text>
+      </view>
+    </view>
+    <view class="time-badge">{{timeText}}</view>
+  </view>
+
+  <!-- 行程标题 -->
+  <view class="card-title" wx:if="{{trip.title}}">
+    <text>{{trip.title}}</text>
+  </view>
+
+  <!-- 目的地 -->
+  <view class="card-destination">
+    <text class="dest-icon">📍</text>
+    <text class="dest-text">{{trip.destination}}</text>
+  </view>
+
+  <!-- 日期 -->
+  <view class="card-dates">
+    <text class="date-icon">📅</text>
+    <text class="date-text">{{startDateText}} — {{endDateText}}</text>
+    <text class="date-days">{{days}}天</text>
+    <text class="member-info" wx:if="{{trip.maxMembers > 0}}">👥 {{trip.currentMembers || 1}}/{{trip.maxMembers}}</text>
+  </view>
+
+  <!-- 标签 -->
+  <view class="card-tags">
+    <view class="tag-item" wx:for="{{trip.tags}}" wx:key="*this">
+      <text>{{tagIcons[item] || '🏷️'}} {{item}}</text>
+    </view>
+  </view>
+
+  <!-- 描述 -->
+  <view class="card-desc" wx:if="{{trip.description}}">
+    <text>{{trip.description}}</text>
+  </view>
+</view>

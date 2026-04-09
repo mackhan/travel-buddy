@@ -1,0 +1,74 @@
+<!-- pages/chat/chat.wxml -->
+<view class="page-chat">
+  <!-- 消息列表 -->
+  <scroll-view
+    class="chat-scroll"
+    scroll-y
+    scroll-into-view="{{scrollToId}}"
+    enhanced
+    show-scrollbar="{{false}}"
+  >
+    <view class="chat-messages">
+      <!-- 加载更多 -->
+      <view class="load-earlier" wx:if="{{hasMore}}" bindtap="loadEarlier">
+        <text>加载更早的消息</text>
+      </view>
+
+      <!-- 时间戳分隔 -->
+      <block
+        wx:for="{{messages}}"
+        wx:key="_id"
+      >
+        <view class="msg-time-divider" wx:if="{{item.showTime && item.displayTime}}">
+          <text class="msg-time-text">{{item.displayTime}}</text>
+        </view>
+
+        <view
+          class="msg-item {{item.isMine ? 'msg-mine' : 'msg-other'}}"
+          id="msg-{{item._id}}"
+        >
+          <image
+            class="msg-avatar"
+            src="{{item.isMine ? myAvatar : otherAvatar}}"
+            mode="aspectFill"
+            wx:if="{{!item.isMine}}"
+          />
+          <view class="msg-bubble">
+            <text class="msg-text">{{item.content}}</text>
+          </view>
+          <image
+            class="msg-avatar"
+            src="{{item.isMine ? myAvatar : otherAvatar}}"
+            mode="aspectFill"
+            wx:if="{{item.isMine}}"
+          />
+        </view>
+      </block>
+
+      <!-- 对方正在输入 -->
+      <view class="typing-indicator" wx:if="{{isTyping}}">
+        <text>对方正在输入...</text>
+      </view>
+
+      <view id="chat-bottom" style="height: 20rpx;"></view>
+    </view>
+  </scroll-view>
+
+  <!-- 输入区域 -->
+  <view class="input-bar safe-bottom">
+    <input
+      class="chat-input"
+      placeholder="说点什么..."
+      value="{{inputValue}}"
+      bindinput="onInput"
+      confirm-type="send"
+      bindconfirm="sendMessage"
+      adjust-position="{{true}}"
+      cursor-spacing="20"
+      bindfocus="scrollToBottom"
+    />
+    <view class="send-btn {{inputValue ? 'send-btn-active' : ''}}" bindtap="sendMessage">
+      <text>发送</text>
+    </view>
+  </view>
+</view>

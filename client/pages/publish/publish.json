@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "发布行程",
+  "usingComponents": {
+    "tag-selector": "/components/tag-selector/tag-selector",
+    "city-picker": "/components/city-picker/city-picker"
+  }
+}

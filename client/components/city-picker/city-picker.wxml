@@ -1,0 +1,142 @@
+<!-- components/city-picker/city-picker.wxml -->
+<view class="picker-mask" wx:if="{{visible}}" catchtouchmove="preventBubble">
+  <view class="picker-container" catchtap="preventBubble">
+    <!-- 标题栏 -->
+    <view class="picker-header">
+      <text class="picker-title">选择目的地</text>
+      <view class="picker-close" bindtap="onClose">✕</view>
+    </view>
+
+    <!-- 搜索栏 -->
+    <view class="search-bar">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        placeholder="搜索城市或国家"
+        value="{{keyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+      />
+      <view class="search-clear" wx:if="{{keyword}}" bindtap="clearSearch">✕</view>
+    </view>
+
+    <!-- 搜索结果 -->
+    <scroll-view class="result-scroll" scroll-y wx:if="{{showSearchResults}}">
+      <view class="search-result-item"
+        wx:for="{{searchResults}}" wx:key="label"
+        bindtap="onSearchSelect" data-value="{{item.label}}"
+      >
+        <text class="result-icon">📍</text>
+        <text class="result-text">{{item.label}}</text>
+      </view>
+      <view class="empty-result" wx:if="{{searchResults.length === 0}}">
+        <text>未找到相关城市</text>
+      </view>
+    </scroll-view>
+
+    <!-- 分类浏览（非搜索时显示） -->
+    <view class="browse-section" wx:if="{{!showSearchResults}}">
+      <!-- Tab 栏 -->
+      <view class="tab-bar">
+        <view class="tab-item {{tab === 'hot' ? 'tab-active' : ''}}" bindtap="switchTab" data-tab="hot">🔥 热门</view>
+        <view class="tab-item {{tab === 'china' ? 'tab-active' : ''}}" bindtap="switchTab" data-tab="china">🇨🇳 国内</view>
+        <view class="tab-item {{tab === 'international' ? 'tab-active' : ''}}" bindtap="switchTab" data-tab="international">🌍 国际</view>
+      </view>
+
+      <!-- 热门城市 -->
+      <scroll-view class="content-scroll" scroll-y wx:if="{{tab === 'hot'}}">
+        <view class="hot-section">
+          <view class="section-label">国内热门</view>
+          <view class="hot-grid">
+            <view class="hot-item"
+              wx:for="{{hotCities}}" wx:key="value"
+              wx:if="{{index < 15}}"
+              bindtap="onHotSelect" data-value="{{item.value}}"
+            >{{item.label}}</view>
+          </view>
+        </view>
+        <view class="hot-section">
+          <view class="section-label">国际热门</view>
+          <view class="hot-grid">
+            <view class="hot-item hot-item-intl"
+              wx:for="{{hotCities}}" wx:key="value"
+              wx:if="{{index >= 15}}"
+              bindtap="onHotSelect" data-value="{{item.value}}"
+            >{{item.label}}</view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <!-- 国内城市 -->
+      <scroll-view class="content-scroll" scroll-y wx:if="{{tab === 'china'}}">
+        <!-- 省份列表 -->
+        <block wx:if="{{!selectedProvince}}">
+          <view class="list-item"
+            wx:for="{{provinces}}" wx:key="*this"
+            bindtap="onProvinceSelect" data-province="{{item}}"
+          >
+            <text class="list-text">{{item}}</text>
+            <text class="list-arrow">›</text>
+          </view>
+        </block>
+
+        <!-- 城市列表 -->
+        <block wx:if="{{selectedProvince}}">
+          <view class="list-back" bindtap="backToProvinces">
+            <text class="back-arrow">‹</text>
+            <text>{{selectedProvince}}</text>
+          </view>
+          <view class="city-grid">
+            <view class="city-item"
+              wx:for="{{provinceCities}}" wx:key="*this"
+              bindtap="onChinaCitySelect" data-city="{{item}}"
+            >{{item}}</view>
+          </view>
+        </block>
+      </scroll-view>
+
+      <!-- 国际城市 -->
+      <scroll-view class="content-scroll" scroll-y wx:if="{{tab === 'international'}}">
+        <!-- 国家列表 -->
+        <block wx:if="{{!selectedCountry}}">
+          <view class="list-item"
+            wx:for="{{countries}}" wx:key="*this"
+            bindtap="onCountrySelect" data-country="{{item}}"
+          >
+            <text class="list-text">{{item}}</text>
+            <text class="list-arrow">›</text>
+          </view>
+        </block>
+
+        <!-- 地区列表 -->
+        <block wx:if="{{selectedCountry && !selectedRegion}}">
+          <view class="list-back" bindtap="backToCountries">
+            <text class="back-arrow">‹</text>
+            <text>{{selectedCountry}}</text>
+          </view>
+          <view class="list-item"
+            wx:for="{{regions}}" wx:key="*this"
+            bindtap="onRegionSelect" data-region="{{item}}"
+          >
+            <text class="list-text">{{item}}</text>
+            <text class="list-arrow">›</text>
+          </view>
+        </block>
+
+        <!-- 城市列表 -->
+        <block wx:if="{{selectedCountry && selectedRegion}}">
+          <view class="list-back" bindtap="backToRegions">
+            <text class="back-arrow">‹</text>
+            <text>{{selectedCountry}} · {{selectedRegion}}</text>
+          </view>
+          <view class="city-grid">
+            <view class="city-item"
+              wx:for="{{regionCities}}" wx:key="*this"
+              bindtap="onIntlCitySelect" data-city="{{item}}"
+            >{{item}}</view>
+          </view>
+        </block>
+      </scroll-view>
+    </view>
+  </view>
+</view>

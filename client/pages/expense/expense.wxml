@@ -1,0 +1,84 @@
+<!-- pages/expense/expense.wxml -->
+<view class="page-expense">
+  <view class="expense-header">
+    <text class="expense-title">费用分摊</text>
+    <view class="new-btn" bindtap="showCreateForm">
+      <text>+ 新建</text>
+    </view>
+  </view>
+
+  <!-- 分摊单列表 -->
+  <view class="expense-list">
+    <view
+      class="expense-card"
+      wx:for="{{expenses}}"
+      wx:key="_id"
+      bindtap="viewDetail"
+      data-id="{{item._id}}"
+    >
+      <view class="expense-card-top">
+        <view class="expense-info">
+          <text class="expense-name">{{item.title}}</text>
+          <text class="expense-amount">¥ {{item.totalAmountText}}</text>
+        </view>
+        <view class="expense-status {{item.status === 'settled' ? 'status-done' : 'status-pending'}}">
+          {{item.status === 'settled' ? '已结清' : '待结算'}}
+        </view>
+      </view>
+      <view class="expense-card-bottom">
+        <text class="expense-meta">{{item.participants.length}}人参与 · {{item.splitMode === 'equal' ? '均摊' : '自定义'}}</text>
+        <text class="expense-time">{{item.timeText}}</text>
+      </view>
+      <!-- 进度条 -->
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{item.paidPercent}}%"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{expenses.length === 0 && !loading}}">
+    <text class="empty-icon">💰</text>
+    <text class="empty-text">暂无费用分摊</text>
+    <view class="empty-btn" bindtap="showCreateForm">新建分摊单</view>
+  </view>
+
+  <!-- 创建弹窗 -->
+  <view class="modal-mask" wx:if="{{showForm}}" bindtap="hideCreateForm">
+    <view class="modal-content" catchtap="">
+      <view class="modal-title">新建分摊单</view>
+
+      <view class="modal-field">
+        <text class="field-label">费用名称</text>
+        <input class="field-input" placeholder="如：酒店住宿" value="{{form.title}}" bindinput="onFormInput" data-field="title" />
+      </view>
+
+      <view class="modal-field">
+        <text class="field-label">总金额（元）</text>
+        <input class="field-input" type="digit" placeholder="0.00" value="{{form.totalAmount}}" bindinput="onFormInput" data-field="totalAmount" />
+      </view>
+
+      <view class="modal-field">
+        <text class="field-label">参与人数</text>
+        <input class="field-input" type="number" placeholder="2" value="{{form.memberCount}}" bindinput="onFormInput" data-field="memberCount" />
+      </view>
+
+      <view class="modal-field">
+        <text class="field-label">分摊方式</text>
+        <view class="split-modes">
+          <view class="split-mode {{form.splitMode === 'equal' ? 'split-active' : ''}}" bindtap="onSplitMode" data-mode="equal">均摊</view>
+          <view class="split-mode {{form.splitMode === 'custom' ? 'split-active' : ''}}" bindtap="onSplitMode" data-mode="custom">自定义</view>
+        </view>
+      </view>
+
+      <view class="modal-preview" wx:if="{{form.totalAmount && form.memberCount >= 2 && form.splitMode === 'equal'}}">
+        <text class="preview-text">每人 ¥ {{perPersonAmount}}</text>
+      </view>
+
+      <view class="modal-actions">
+        <view class="modal-btn modal-cancel" bindtap="hideCreateForm">取消</view>
+        <view class="modal-btn modal-confirm" bindtap="createExpense">创建</view>
+      </view>
+    </view>
+  </view>
+</view>

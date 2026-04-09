@@ -1,0 +1,383 @@
+/* pages/profile/profile.wxss */
+
+.page-profile {
+  min-height: 100vh;
+  background: #F5F7FA;
+}
+
+/* ====== 个人信息卡 ====== */
+.profile-hero {
+  position: relative;
+  padding: 0 32rpx 40rpx;
+}
+
+.hero-bg-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 360rpx;
+  background: linear-gradient(165deg, #12B7B5 0%, #0E9D9B 50%, #0A8A88 100%);
+  border-radius: 0 0 48rpx 48rpx;
+}
+
+.profile-card {
+  position: relative;
+  z-index: 1;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  padding: 40rpx 32rpx 32rpx;
+  margin-top: 120rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 50%;
+  border: 6rpx solid #FFFFFF;
+  box-shadow: 0 8rpx 24rpx rgba(18, 183, 181, 0.3);
+  margin-top: -112rpx;
+}
+
+.profile-name {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #1A1A2E;
+  margin-top: 16rpx;
+}
+
+.profile-bio {
+  font-size: 26rpx;
+  color: #999999;
+  margin-top: 8rpx;
+  line-height: 1.5;
+}
+
+/* 统计数据 */
+.stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 28rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #F0F0F0;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-num {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #12B7B5;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  color: #999999;
+  margin-top: 4rpx;
+}
+
+.stat-divider {
+  width: 1rpx;
+  height: 48rpx;
+  background: #F0F0F0;
+}
+
+/* ====== 功能菜单 ====== */
+.menu-section {
+  padding: 0 32rpx;
+}
+
+.menu-card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 32rpx;
+  transition: background 0.15s ease;
+}
+
+.menu-item:active {
+  background: #F5F7FA;
+}
+
+.menu-icon {
+  font-size: 36rpx;
+  margin-right: 20rpx;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 30rpx;
+  color: #1A1A2E;
+  font-weight: 500;
+}
+
+.menu-arrow {
+  font-size: 36rpx;
+  color: #CCCCCC;
+}
+
+.menu-divider {
+  height: 1rpx;
+  background: #F5F5F5;
+  margin-left: 88rpx;
+}
+
+/* ====== 行程列表子页 ====== */
+.trip-list-section,
+.review-list-section {
+  padding: 0 32rpx 32rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1A1A2E;
+}
+
+.close-btn {
+  font-size: 26rpx;
+  color: #999999;
+  padding: 8rpx 20rpx;
+}
+
+/* 状态筛选 */
+.status-tabs {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.status-tab {
+  padding: 10rpx 24rpx;
+  border-radius: 100rpx;
+  font-size: 26rpx;
+  color: #666666;
+  background: #FFFFFF;
+}
+
+.tab-active {
+  background: #E8F8F7;
+  color: #12B7B5;
+  font-weight: 500;
+}
+
+/* 行程项 */
+.my-trip-item {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.my-trip-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.my-trip-dest {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1A1A2E;
+}
+
+.my-trip-status {
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 100rpx;
+}
+
+.status-active {
+  background: #E8F8F7;
+  color: #12B7B5;
+}
+
+.status-completed {
+  background: #F6FFED;
+  color: #52C41A;
+}
+
+.status-cancelled {
+  background: #FFF1F0;
+  color: #FF4D4F;
+}
+
+.my-trip-dates {
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 10rpx;
+}
+
+.my-trip-tags {
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.my-trip-tag {
+  font-size: 22rpx;
+  color: #12B7B5;
+  background: #E8F8F7;
+  padding: 4rpx 14rpx;
+  border-radius: 100rpx;
+}
+
+/* ====== 评价列表 ====== */
+.review-item {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.review-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.review-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.review-info {
+  flex: 1;
+  margin-left: 16rpx;
+}
+
+.review-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1A1A2E;
+}
+
+.review-stars {
+  margin-top: 4rpx;
+}
+
+.star-on {
+  font-size: 22rpx;
+  color: #FAAD14;
+}
+
+.review-time {
+  font-size: 22rpx;
+  color: #CCCCCC;
+}
+
+.review-content {
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.6;
+  margin-bottom: 8rpx;
+}
+
+.review-trip {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+/* ====== 编辑弹窗 ====== */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  width: 80%;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx 32rpx;
+}
+
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1A1A2E;
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+
+.modal-field {
+  margin-bottom: 24rpx;
+}
+
+.bio-textarea {
+  width: 100%;
+  height: 200rpx;
+  background: #F5F7FA;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: #333333;
+  box-sizing: border-box;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 22rpx;
+  color: #CCCCCC;
+  margin-top: 8rpx;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 24rpx;
+  margin-top: 8rpx;
+}
+
+.modal-btn {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  border-radius: 100rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.modal-cancel {
+  background: #F5F7FA;
+  color: #666666;
+}
+
+.modal-confirm {
+  background: #12B7B5;
+  color: #FFFFFF;
+}

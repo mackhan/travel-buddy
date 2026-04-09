@@ -1,0 +1,165 @@
+/* components/trip-card/trip-card.wxss */
+
+.trip-card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trip-card:active {
+  transform: scale(0.985);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+/* 头部 */
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.user-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  border: 4rpx solid #E8F8F7;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  margin-left: 20rpx;
+}
+
+.user-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1A1A2E;
+  margin-bottom: 4rpx;
+}
+
+.user-credit {
+  display: flex;
+  align-items: center;
+}
+
+.star-icon {
+  font-size: 22rpx;
+  margin-right: 2rpx;
+}
+
+.star-filled {
+  color: #FAAD14;
+}
+
+.star-empty {
+  color: #E0E0E0;
+}
+
+.credit-score {
+  font-size: 22rpx;
+  color: #999999;
+  margin-left: 8rpx;
+}
+
+.time-badge {
+  font-size: 22rpx;
+  color: #999999;
+  background: #F5F7FA;
+  padding: 6rpx 16rpx;
+  border-radius: 100rpx;
+}
+
+/* 行程标题 */
+.card-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1A1A2E;
+  margin-bottom: 12rpx;
+  line-height: 1.4;
+}
+
+/* 目的地 */
+.card-destination {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.dest-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+.dest-text {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #1A1A2E;
+}
+
+/* 日期 */
+.card-dates {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.date-icon {
+  font-size: 26rpx;
+  margin-right: 8rpx;
+}
+
+.date-text {
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.date-days {
+  font-size: 22rpx;
+  color: #12B7B5;
+  background: #E8F8F7;
+  padding: 4rpx 14rpx;
+  border-radius: 100rpx;
+  margin-left: 12rpx;
+  font-weight: 500;
+}
+
+.member-info {
+  font-size: 22rpx;
+  color: #FF8C42;
+  background: #FFF8F0;
+  padding: 4rpx 14rpx;
+  border-radius: 100rpx;
+  margin-left: 8rpx;
+  font-weight: 500;
+}
+
+/* 标签 */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.tag-item {
+  font-size: 24rpx;
+  color: #12B7B5;
+  background: #E8F8F7;
+  padding: 8rpx 20rpx;
+  border-radius: 100rpx;
+}
+
+/* 描述 */
+.card-desc {
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,0 +1,274 @@
+/* components/city-picker/city-picker.wxss */
+
+.picker-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+}
+
+.picker-container {
+  width: 100%;
+  height: 80vh;
+  background: #FFFFFF;
+  border-radius: 32rpx 32rpx 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 标题栏 */
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 28rpx 32rpx 16rpx;
+}
+
+.picker-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1A1A2E;
+}
+
+.picker-close {
+  position: absolute;
+  right: 32rpx;
+  top: 26rpx;
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  color: #999;
+  background: #F5F5F5;
+  border-radius: 50%;
+}
+
+/* 搜索栏 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  margin: 12rpx 32rpx 16rpx;
+  padding: 16rpx 24rpx;
+  background: #F5F7FA;
+  border-radius: 20rpx;
+}
+
+.search-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #1A1A2E;
+}
+
+.search-clear {
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #999;
+  background: #E0E0E0;
+  border-radius: 50%;
+  margin-left: 12rpx;
+}
+
+/* 搜索结果 */
+.result-scroll {
+  flex: 1;
+  padding: 0 32rpx;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 16rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.search-result-item:active {
+  background: #F5F7FA;
+}
+
+.result-icon {
+  font-size: 28rpx;
+  margin-right: 16rpx;
+}
+
+.result-text {
+  font-size: 30rpx;
+  color: #1A1A2E;
+}
+
+.empty-result {
+  padding: 80rpx 0;
+  text-align: center;
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 浏览区 */
+.browse-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Tab 栏 */
+.tab-bar {
+  display: flex;
+  padding: 0 32rpx;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.tab-item {
+  padding: 16rpx 32rpx;
+  font-size: 28rpx;
+  color: #666;
+  position: relative;
+}
+
+.tab-active {
+  color: #12B7B5;
+  font-weight: 600;
+}
+
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48rpx;
+  height: 4rpx;
+  background: #12B7B5;
+  border-radius: 2rpx;
+}
+
+/* 内容区 */
+.content-scroll {
+  flex: 1;
+  padding: 16rpx 32rpx 40rpx;
+}
+
+/* 热门城市 */
+.hot-section {
+  margin-bottom: 28rpx;
+}
+
+.section-label {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 16rpx;
+  padding-left: 4rpx;
+}
+
+.hot-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.hot-item {
+  padding: 16rpx 28rpx;
+  background: #F5F7FA;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: #1A1A2E;
+  border: 2rpx solid transparent;
+}
+
+.hot-item:active {
+  background: #E8F7F7;
+  border-color: #12B7B5;
+  color: #12B7B5;
+}
+
+.hot-item-intl {
+  background: #FFF8F0;
+}
+
+.hot-item-intl:active {
+  background: #FFF0E0;
+  border-color: #FF8C42;
+  color: #FF8C42;
+}
+
+/* 列表项 */
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 16rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.list-item:active {
+  background: #F5F7FA;
+}
+
+.list-text {
+  font-size: 30rpx;
+  color: #1A1A2E;
+}
+
+.list-arrow {
+  font-size: 32rpx;
+  color: #CCC;
+}
+
+/* 返回 */
+.list-back {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 16rpx;
+  margin-bottom: 12rpx;
+  font-size: 30rpx;
+  color: #12B7B5;
+  font-weight: 600;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.list-back:active {
+  opacity: 0.7;
+}
+
+.back-arrow {
+  font-size: 36rpx;
+  margin-right: 8rpx;
+}
+
+/* 城市网格 */
+.city-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  padding: 8rpx 0;
+}
+
+.city-item {
+  padding: 18rpx 28rpx;
+  background: #F5F7FA;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: #1A1A2E;
+}
+
+.city-item:active {
+  background: #E8F7F7;
+  color: #12B7B5;
+}
