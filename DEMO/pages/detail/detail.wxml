@@ -1,0 +1,73 @@
+<view class="container">
+  <view class="header">
+    <view class="user-info">
+      <image class="user-avatar" src="{{partner.avatar}}" mode="aspectFill"></image>
+      <view class="user-details">
+        <text class="user-name">{{partner.name}}</text>
+        <text class="user-location">📍 {{partner.city}}</text>
+      </view>
+      <view class="user-status {{partner.status}}">{{partner.statusText}}</view>
+    </view>
+  </view>
+
+  <view class="content-section">
+    <view class="info-card">
+      <view class="card-title">📝 计划详情</view>
+      <text class="card-desc">{{partner.description}}</text>
+      
+      <view class="info-grid">
+        <view class="info-item">
+          <text class="info-label">出行时间</text>
+          <text class="info-value">📅 {{partner.startDate || partner.date}}{{partner.endDate ? ' 至 ' + partner.endDate : ''}}</text>
+        </view>
+        <view class="info-item">
+          <text class="info-label">出发时间</text>
+          <text class="info-value">⏰ {{partner.time}}</text>
+        </view>
+        <view class="info-item">
+          <text class="info-label">需要人数</text>
+          <text class="info-value">👥 {{partner.peopleCount}}人</text>
+        </view>
+        <view class="info-item">
+          <text class="info-label">费用说明</text>
+          <text class="info-value">💰 {{partner.costTypeText}}</text>
+        </view>
+      </view>
+
+      <view class="tags-section">
+        <text class="tags-label">活动类型</text>
+        <view class="tags-list">
+          <view class="tag tag-primary" wx:for="{{partner.tags}}" wx:key="*this">{{item}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="info-card">
+      <view class="card-title">💬 发起留言</view>
+      <view class="message-input-wrapper">
+        <textarea 
+          class="message-input" 
+          placeholder="介绍一下你自己，说明你想加入的原因..."
+          placeholder-class="input-placeholder"
+          value="{{message}}"
+          bindinput="onMessageInput"
+          maxlength="300"
+          show-confirm-bar="{{false}}"
+        ></textarea>
+        <text class="char-count">{{message.length}}/300</text>
+      </view>
+    </view>
+
+    <view class="tips-card">
+      <text class="tips-title">💡 温馨提示</text>
+      <text class="tips-text">• 发起申请后，对方会收到通知</text>
+      <text class="tips-text">• 建议提前沟通确认细节</text>
+      <text class="tips-text">• 注意出行安全，保护个人隐私</text>
+    </view>
+  </view>
+
+  <view class="action-section">
+    <button class="action-btn primary" bindtap="sendRequest">发起邀请</button>
+    <button class="action-btn secondary" bindtap="sharePartner">分享给朋友</button>
+  </view>
+</view>

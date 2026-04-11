@@ -1,0 +1,181 @@
+<view class="container">
+  <view class="header">
+    <image class="header-banner" src="/images/banner.png" mode="aspectFill" />
+  </view>
+
+  <view class="filter-section">
+    <view class="filter-card">
+      <view class="filter-item" bindtap="showCityPicker">
+        <text class="filter-label">目的地</text>
+        <text class="filter-value {{country ? '' : 'placeholder'}}">{{city ? (province + ' · ' + city) : (province ? province : (country || '选择目的地'))}}</text>
+        <text class="arrow">›</text>
+      </view>
+      <view class="filter-divider"></view>
+      <view class="filter-date-item">
+        <text class="filter-label">出行时间</text>
+        <view class="filter-date-range">
+          <picker
+            mode="date"
+            value="{{startDate}}"
+            start="{{today}}"
+            end="{{endDate || maxDate}}"
+            bindchange="onStartDateChange"
+          >
+            <view class="filter-date-block">
+              <text class="filter-date-block-value {{startDate ? '' : 'placeholder'}}">{{startDate || '出发日期'}}</text>
+            </view>
+          </picker>
+          <text class="filter-date-sep">至</text>
+          <picker
+            mode="date"
+            value="{{endDate}}"
+            start="{{startDate || today}}"
+            end="{{maxDate}}"
+            bindchange="onEndDateChange"
+          >
+            <view class="filter-date-block">
+              <text class="filter-date-block-value {{endDate ? '' : 'placeholder'}}">{{endDate || '返回日期'}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="city-picker-modal" wx:if="{{showCityPicker}}" bindtap="hideCityPicker">
+    <view class="city-picker-content" catchtap="">
+      <view class="picker-header">
+        <text class="picker-title">选择目的地</text>
+        <text class="picker-close" bindtap="hideCityPicker">✕</text>
+      </view>
+      <view class="picker-body">
+        <view class="picker-column">
+          <text class="picker-label">国家</text>
+          <input 
+            class="picker-search" 
+            placeholder="搜索国家..." 
+            value="{{countrySearchKeyword}}"
+            bindinput="onCountrySearchInput"
+          />
+          <scroll-view scroll-y class="picker-scroll">
+            <view class="picker-item {{countries[countryIndex] === item ? 'active' : ''}}" 
+                  wx:for="{{filteredCountries}}" 
+                  wx:key="index"
+                  bindtap="onCountryChange" 
+                  data-value="{{index}}">
+              {{item}}
+            </view>
+          </scroll-view>
+        </view>
+        <view class="picker-column">
+          <text class="picker-label">省份</text>
+          <input 
+            class="picker-search" 
+            placeholder="搜索省份..." 
+            value="{{provinceSearchKeyword}}"
+            bindinput="onProvinceSearchInput"
+          />
+          <scroll-view scroll-y class="picker-scroll">
+            <view class="picker-item {{filteredProvinces[provinceIndex] === item ? 'active' : ''}}" 
+                  wx:for="{{filteredProvinces}}" 
+                  wx:key="index"
+                  bindtap="onProvinceChange" 
+                  data-value="{{index}}">
+              {{item}}
+            </view>
+          </scroll-view>
+        </view>
+        <view class="picker-column">
+          <text class="picker-label">城市</text>
+          <input 
+            class="picker-search" 
+            placeholder="搜索城市..." 
+            value="{{citySearchKeyword}}"
+            bindinput="onCitySearchInput"
+          />
+          <scroll-view scroll-y class="picker-scroll">
+            <view class="picker-item {{filteredCities[cityIndex] === item ? 'active' : ''}}" 
+                  wx:for="{{filteredCities}}" 
+                  wx:key="index"
+                  bindtap="onCityChange" 
+                  data-value="{{index}}">
+              {{item}}
+            </view>
+            <view class="picker-empty" wx:if="{{filteredCities.length === 0}}">
+              <text class="picker-empty-text">请先选择省份</text>
+            </view>
+          </scroll-view>
+        </view>
+      </view>
+      <view class="picker-footer">
+        <button class="picker-confirm" bindtap="confirmCityPicker">确定</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="search-section">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索目的地或活动类型" placeholder-class="search-placeholder" bindinput="onSearchInput" />
+    </view>
+  </view>
+
+  <view class="tags-section">
+    <scroll-view scroll-x class="tags-scroll">
+      <view class="tag-item {{activeTag === 'all' ? 'active' : ''}}" bindtap="selectTag" data-tag="all">全部</view>
+      <view class="tag-item {{activeTag === 'carpool' ? 'active' : ''}}" bindtap="selectTag" data-tag="carpool">拼车</view>
+      <view class="tag-item {{activeTag === 'room' ? 'active' : ''}}" bindtap="selectTag" data-tag="room">拼房</view>
+      <view class="tag-item {{activeTag === 'food' ? 'active' : ''}}" bindtap="selectTag" data-tag="food">美食</view>
+      <view class="tag-item {{activeTag === 'sightseeing' ? 'active' : ''}}" bindtap="selectTag" data-tag="sightseeing">观光</view>
+      <view class="tag-item {{activeTag === 'shopping' ? 'active' : ''}}" bindtap="selectTag" data-tag="shopping">购物</view>
+      <view class="tag-item {{activeTag === 'photography' ? 'active' : ''}}" bindtap="selectTag" data-tag="photography">摄影</view>
+      <view class="tag-item {{activeTag === 'adventure' ? 'active' : ''}}" bindtap="selectTag" data-tag="adventure">探险</view>
+    </scroll-view>
+  </view>
+
+  <view class="partners-section">
+    <view class="section-header">
+      <text class="section-title">附近搭子</text>
+      <text class="section-count">{{partners.length}}人</text>
+    </view>
+
+    <view class="loading-state" wx:if="{{loading}}">
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <view class="partners-list" wx:if="{{!loading}}">
+      <view class="partner-card" wx:for="{{filteredPartners}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+        <view class="partner-header">
+          <image class="partner-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+          <view class="partner-info">
+            <text class="partner-name">{{item.nickname}}</text>
+            <text class="partner-location">📍 {{item.city}}</text>
+          </view>
+          <view class="partner-status {{item.status}}">{{item.status === 'seeking' ? '寻找中' : '已匹配'}}</view>
+        </view>
+
+        <view class="partner-content">
+          <text class="partner-desc">{{item.description}}</text>
+        </view>
+
+        <view class="partner-tags">
+          <view class="tag tag-primary" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</view>
+        </view>
+
+        <view class="partner-footer">
+          <text class="partner-date">📅 {{item.startDate}}{{item.endDate ? ' 至 ' + item.endDate : ''}}</text>
+          <text class="partner-time">⏰ {{item.time}}</text>
+          <text class="partner-cost" wx:if="{{item.costType === 'fixed'}}">💰 {{item.price}}元/人</text>
+          <text class="partner-cost" wx:if="{{item.costType === 'AA'}}">💰 AA制</text>
+          <text class="partner-cost" wx:if="{{item.costType === 'free'}}">💰 我请客</text>
+        </view>
+      </view>
+
+      <view class="empty-state" wx:if="{{filteredPartners.length === 0}}">
+        <text class="empty-icon">🤔</text>
+        <text class="empty-text">暂无符合条件的搭子</text>
+        <text class="empty-hint">换个筛选条件试试吧</text>
+      </view>
+    </view>
+  </view>
+</view>

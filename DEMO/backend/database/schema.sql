@@ -1,0 +1,52 @@
+CREATE DATABASE IF NOT EXISTS daniuniu CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE daniuniu;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  openid VARCHAR(100) UNIQUE NOT NULL COMMENT '微信openid',
+  nickname VARCHAR(50) COMMENT '昵称',
+  avatar VARCHAR(255) COMMENT '头像URL',
+  phone VARCHAR(20) COMMENT '手机号',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+
+CREATE TABLE IF NOT EXISTS partners (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL COMMENT '发布者ID',
+  country VARCHAR(50) COMMENT '国家',
+  province VARCHAR(50) COMMENT '省份',
+  city VARCHAR(50) COMMENT '城市',
+  start_date DATE COMMENT '开始日期',
+  end_date DATE COMMENT '结束日期',
+  time VARCHAR(20) COMMENT '出发时间',
+  tags JSON COMMENT '活动标签',
+  description TEXT COMMENT '计划描述',
+  people_count INT DEFAULT 1 COMMENT '人数',
+  cost_type ENUM('fixed', 'AA', 'free') DEFAULT 'AA' COMMENT '费用类型',
+  price DECIMAL(10,2) COMMENT '价格',
+  status ENUM('seeking', 'matched', 'cancelled') DEFAULT 'seeking' COMMENT '状态',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搭子表';
+
+CREATE TABLE IF NOT EXISTS trips (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  partner_id INT NOT NULL COMMENT '搭子ID',
+  country VARCHAR(50) COMMENT '国家',
+  province VARCHAR(50) COMMENT '省份',
+  city VARCHAR(50) COMMENT '城市',
+  start_date DATE COMMENT '开始日期',
+  end_date DATE COMMENT '结束日期',
+  time VARCHAR(20) COMMENT '出发时间',
+  tags JSON COMMENT '活动标签',
+  description TEXT COMMENT '计划描述',
+  people_count INT DEFAULT 1 COMMENT '人数',
+  cost_type ENUM('fixed', 'AA', 'free') DEFAULT 'AA' COMMENT '费用类型',
+  price DECIMAL(10,2) COMMENT '价格',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  FOREIGN KEY (partner_id) REFERENCES partners(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='行程表';

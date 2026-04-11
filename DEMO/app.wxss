@@ -1,0 +1,63 @@
+page {
+  background-color: #F5F5F5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+.container {
+  min-height: 100vh;
+  padding-bottom: 20rpx;
+}
+
+.card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF8E53 100%);
+  color: #FFFFFF;
+  border-radius: 50rpx;
+  padding: 24rpx 48rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.3);
+}
+
+.btn-secondary {
+  background: #FFFFFF;
+  color: #FF6B9D;
+  border: 2rpx solid #FF6B9D;
+  border-radius: 50rpx;
+  padding: 22rpx 46rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.tag {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.tag-primary {
+  background: rgba(255, 107, 157, 0.1);
+  color: #FF6B9D;
+}
+
+.tag-secondary {
+  background: rgba(255, 142, 83, 0.1);
+  color: #FF8E53;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF8E53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

@@ -1,0 +1,304 @@
+<view class="container">
+  <view class="header">
+    <text class="title">发搭子</text>
+    <text class="subtitle">发布你的旅行计划</text>
+  </view>
+
+  <view class="trips-section">
+    <view class="trips-list">
+      <view class="trip-card" wx:for="{{trips}}" wx:key="index">
+        <view class="trip-header">
+          <text class="trip-title">行程 {{index + 1}}</text>
+          <view class="trip-actions" wx:if="{{trips.length > 1}}" bindtap="removeTrip" data-index="{{index}}">
+            <text class="trip-delete">删除</text>
+          </view>
+        </view>
+
+        <view class="trip-body">
+          <view class="trip-item" bindtap="showCityPicker" data-index="{{index}}">
+            <text class="trip-label">目的地</text>
+            <text class="trip-value {{item.city ? '' : 'placeholder'}}">{{item.country || item.province || item.city || '选择城市'}}</text>
+            <text class="trip-arrow">›</text>
+          </view>
+
+          <view class="trip-item">
+            <text class="trip-label">出行时间</text>
+            <view class="date-range-inline">
+              <picker
+                mode="date"
+                value="{{item.startDate}}"
+                start="{{today}}"
+                end="{{item.endDate || maxDate}}"
+                data-index="{{index}}"
+                bindchange="onStartDateChange"
+              >
+                <view class="date-range-block">
+                  <text class="date-range-block-text">出发日期</text>
+                  <text class="date-range-block-value {{item.startDate ? '' : 'placeholder'}}">{{item.startDate || '请选择'}}</text>
+                </view>
+              </picker>
+              <text class="date-range-inline-sep">至</text>
+              <picker
+                mode="date"
+                value="{{item.endDate}}"
+                start="{{item.startDate || today}}"
+                end="{{maxDate}}"
+                data-index="{{index}}"
+                bindchange="onEndDateChange"
+              >
+                <view class="date-range-block">
+                  <text class="date-range-block-text">返回日期</text>
+                  <text class="date-range-block-value {{item.endDate ? '' : 'placeholder'}}">{{item.endDate || '请选择'}}</text>
+                </view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="trip-item" bindtap="showTimePicker" data-index="{{index}}">
+            <text class="trip-label">出发时间</text>
+            <text class="trip-value {{item.time ? '' : 'placeholder'}}">{{item.time || '选择时间'}}</text>
+            <text class="trip-arrow">›</text>
+          </view>
+
+          <view class="trip-item">
+            <text class="trip-label">活动类型</text>
+            <view class="trip-tags">
+              <view class="trip-tag {{item.tags.includes('拼车') ? 'active' : ''}}" bindtap="toggleTag" data-tag="拼车" data-index="{{index}}">
+                <text>拼车</text>
+              </view>
+              <view class="trip-tag {{item.tags.includes('拼房') ? 'active' : ''}}" bindtap="toggleTag" data-tag="拼房" data-index="{{index}}">
+                <text>拼房</text>
+              </view>
+              <view class="trip-tag {{item.tags.includes('美食') ? 'active' : ''}}" bindtap="toggleTag" data-tag="美食" data-index="{{index}}">
+                <text>美食</text>
+              </view>
+              <view class="trip-tag {{item.tags.includes('观光') ? 'active' : ''}}" bindtap="toggleTag" data-tag="观光" data-index="{{index}}">
+                <text>观光</text>
+              </view>
+              <view class="trip-tag {{item.tags.includes('购物') ? 'active' : ''}}" bindtap="toggleTag" data-tag="购物" data-index="{{index}}">
+                <text>购物</text>
+              </view>
+              <view class="trip-tag {{item.tags.includes('摄影') ? 'active' : ''}}" bindtap="toggleTag" data-tag="摄影" data-index="{{index}}">
+                <text>摄影</text>
+              </view>
+              <view class="trip-tag {{item.tags.includes('探险') ? 'active' : ''}}" bindtap="toggleTag" data-tag="探险" data-index="{{index}}">
+                <text>探险</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="trip-item">
+            <text class="trip-label">计划描述</text>
+            <textarea 
+              class="trip-textarea" 
+              placeholder="详细描述你的旅行计划..."
+              placeholder-class="textarea-placeholder"
+              value="{{item.description}}"
+              bindinput="onDescriptionInput"
+              data-index="{{index}}"
+              maxlength="500"
+              show-confirm-bar="{{false}}"
+            ></textarea>
+            <text class="char-count">{{item.description.length}}/500</text>
+          </view>
+
+          <view class="trip-item">
+            <text class="trip-label">需要人数</text>
+            <view class="trip-counter">
+              <view class="trip-counter-btn" bindtap="decreaseCount" data-index="{{index}}">-</view>
+              <text class="trip-counter-value">{{item.peopleCount}}</text>
+              <view class="trip-counter-btn" bindtap="increaseCount" data-index="{{index}}">+</view>
+            </view>
+          </view>
+
+          <view class="trip-item">
+            <text class="trip-label">费用说明</text>
+            <view class="trip-radio-group">
+              <view class="trip-radio-option {{item.costType === 'fixed' ? 'active' : ''}}" bindtap="selectCostType" data-type="fixed" data-index="{{index}}">
+                <text>一口价</text>
+              </view>
+              <view class="trip-radio-option {{item.costType === 'AA' ? 'active' : ''}}" bindtap="selectCostType" data-type="AA" data-index="{{index}}">
+                <text>AA制</text>
+              </view>
+              <view class="trip-radio-option {{item.costType === 'free' ? 'active' : ''}}" bindtap="selectCostType" data-type="free" data-index="{{index}}">
+                <text>我请客</text>
+              </view>
+            </view>
+          </view>
+          <view class="trip-item" wx:if="{{item.costType === 'fixed'}}">
+            <view class="trip-price-row">
+              <text class="trip-label">价格（每人）</text>
+              <input 
+                class="trip-input" 
+                type="digit" 
+                placeholder="请输入价格" 
+                value="{{item.price}}"
+                bindinput="onPriceInput"
+                data-index="{{index}}"
+              />
+              <text class="trip-unit">元/人</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="add-trip-btn" bindtap="addTrip">
+        <text class="add-icon">+</text>
+        <text class="add-text">添加行程</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tips-section">
+    <view class="tips-card">
+      <text class="tips-title">💡 温馨提示</text>
+      <text class="tips-text">• 请确保发布的信息真实有效</text>
+      <text class="tips-text">• 建议提前与搭子沟通确认细节</text>
+      <text class="tips-text">• 注意出行安全，保护个人隐私</text>
+    </view>
+  </view>
+
+  <view class="submit-section">
+    <button class="submit-btn" bindtap="submitForm">发布搭子</button>
+  </view>
+
+  <view class="city-picker-modal" wx:if="{{showCityPicker}}" bindtap="hideCityPicker">
+    <view class="city-picker-content" catchtap="">
+      <view class="picker-header">
+        <text class="picker-title">选择目的地</text>
+        <text class="picker-close" bindtap="hideCityPicker">✕</text>
+      </view>
+      <view class="picker-body">
+        <view class="picker-column">
+          <text class="picker-label">国家</text>
+          <input 
+            class="picker-search" 
+            placeholder="搜索国家..." 
+            value="{{countrySearchKeyword}}"
+            bindinput="onCountrySearchInput"
+          />
+          <scroll-view scroll-y class="picker-scroll">
+            <view class="picker-item {{countries[countryIndex] === item ? 'active' : ''}}" 
+                  wx:for="{{filteredCountries}}" 
+                  wx:key="index"
+                  bindtap="onCountryChange" 
+                  data-value="{{countries.indexOf(item)}}">
+              {{item}}
+            </view>
+          </scroll-view>
+        </view>
+        <view class="picker-column">
+          <text class="picker-label">省份</text>
+          <input 
+            class="picker-search" 
+            placeholder="搜索省份..." 
+            value="{{provinceSearchKeyword}}"
+            bindinput="onProvinceSearchInput"
+          />
+          <scroll-view scroll-y class="picker-scroll">
+            <view class="picker-item {{provinces[provinceIndex] === item ? 'active' : ''}}" 
+                  wx:for="{{filteredProvinces}}" 
+                  wx:key="index"
+                  bindtap="onProvinceChange" 
+                  data-value="{{provinces.indexOf(item)}}">
+              {{item}}
+            </view>
+          </scroll-view>
+        </view>
+        <view class="picker-column">
+          <text class="picker-label">城市</text>
+          <input 
+            class="picker-search" 
+            placeholder="搜索城市..." 
+            value="{{citySearchKeyword}}"
+            bindinput="onCitySearchInput"
+          />
+          <scroll-view scroll-y class="picker-scroll">
+            <view class="picker-item {{cities[cityIndex] === item ? 'active' : ''}}" 
+                  wx:for="{{filteredCities}}" 
+                  wx:key="index"
+                  bindtap="onCityChange" 
+                  data-value="{{cities.indexOf(item)}}">
+              {{item}}
+            </view>
+            <view class="picker-empty" wx:if="{{filteredCities.length === 0}}">
+              <text class="picker-empty-text">请先选择省份</text>
+            </view>
+          </scroll-view>
+        </view>
+      </view>
+      <view class="picker-footer">
+        <button class="picker-confirm" bindtap="hideCityPicker">确定</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="date-picker-modal" wx:if="{{showDateModal}}" bindtap="hideDatePicker">
+    <view class="date-picker-content" catchtap="">
+      <view class="picker-header">
+        <text class="picker-title">选择出发日期</text>
+        <text class="picker-close" bindtap="hideDatePicker">✕</text>
+      </view>
+      <view class="picker-body">
+        <view class="date-range-row">
+          <view class="date-range-left">
+            <text class="date-range-label">出发日期</text>
+            <picker 
+              mode="date" 
+              value="{{trips[currentTripIndex].startDate}}" 
+              start="{{today}}" 
+              end="{{maxDate}}" 
+              bindchange="onStartDateChange"
+            >
+              <view class="date-picker-trigger">
+                <text class="date-picker-value {{trips[currentTripIndex].startDate ? 'selected' : ''}}">{{trips[currentTripIndex].startDate || '选择日期'}}</text>
+              </view>
+            </picker>
+          </view>
+          <text class="date-range-separator">至</text>
+          <view class="date-range-right">
+            <text class="date-range-label">返回日期</text>
+            <picker 
+              mode="date" 
+              value="{{trips[currentTripIndex].endDate}}" 
+              start="{{trips[currentTripIndex].startDate || today}}" 
+              end="{{maxDate}}" 
+              bindchange="onEndDateChange"
+            >
+              <view class="date-picker-trigger">
+                <text class="date-picker-value {{trips[currentTripIndex].endDate ? 'selected' : ''}}">{{trips[currentTripIndex].endDate || '选择日期'}}</text>
+              </view>
+            </picker>
+          </view>
+        </view>
+      </view>
+      <view class="picker-footer">
+        <button class="picker-confirm" bindtap="hideDatePicker">确定</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 时间选择器弹窗 -->
+  <view class="time-picker-modal" wx:if="{{showTimeModal}}" bindtap="hideTimePicker">
+    <view class="date-picker-content" catchtap="">
+      <view class="picker-header">
+        <text class="picker-title">选择出发时间</text>
+        <text class="picker-close" bindtap="hideTimePicker">✕</text>
+      </view>
+      <view class="picker-body">
+        <picker 
+          mode="time" 
+          value="{{trips[currentTripIndex].time || '09:00'}}" 
+          bindchange="onTimeChange"
+        >
+          <view class="date-picker-trigger">
+            <text class="date-picker-value {{trips[currentTripIndex].time ? 'selected' : ''}}">{{trips[currentTripIndex].time || '选择时间'}}</text>
+          </view>
+        </picker>
+      </view>
+      <view class="picker-footer">
+        <button class="picker-confirm" bindtap="hideTimePicker">确定</button>
+      </view>
+    </view>
+  </view>
+</view>
