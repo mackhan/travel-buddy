@@ -1,5 +1,4 @@
-// utils/request.js - HTTP 请求封装
-// 注意：不能在模块顶层调用 getApp()，必须在函数内部获取
+// utils/request.js - HTTP 请求封装（使用 wx.cloud.callContainer，无需配置合法域名）
 const { mockRequest } = require('./mock')
 
 /**
@@ -18,39 +17,34 @@ function request({ url, method = 'GET', data = {}, auth = true, _retryCount = 0 
     return new Promise((resolve) => {
       const fullUrl = `${app.globalData.baseUrl}${url}`
       const mockRes = mockRequest(fullUrl, method, data)
-      // 模拟一点网络延迟，让 loading 状态能展示
-      setTimeout(() => {
-        resolve(mockRes.data)
-      }, 200)
+      setTimeout(() => resolve(mockRes.data), 200)
     })
   }
 
-  // ===== 正常模式：发真实请求 =====
+  // ===== 正常模式：通过云托管发请求（无需合法域名） =====
   return new Promise((resolve, reject) => {
-    const header = {
-      'Content-Type': 'application/json'
-    }
-
+    const header = { 'Content-Type': 'application/json' }
     if (auth && app.globalData.token) {
       header['Authorization'] = `Bearer ${app.globalData.token}`
     }
 
-    wx.request({
-      url: `${app.globalData.baseUrl}${url}`,
+    wx.cloud.callContainer({
+      config: { env: app.globalData.cloudEnvId },
+      path: `/api${url}`,
       method,
+      header: {
+        ...header,
+        'X-WX-SERVICE': app.globalData.cloudServiceName
+      },
       data,
-      header,
-      timeout: 10000,
       success(res) {
         if (res.statusCode === 200) {
           resolve(res.data)
         } else if (res.statusCode === 401 && _retryCount < 1) {
-          // token 过期，重新登录后重试（最多重试1次，防止无限循环）
           app.doLogin().then(() => {
             request({ url, method, data, auth, _retryCount: _retryCount + 1 }).then(resolve).catch(reject)
           }).catch(reject)
         } else if (res.statusCode === 401) {
-          // 重试后仍然 401，跳到登录
           wx.showToast({ title: '登录已过期，请重新打开', icon: 'none' })
           reject(new Error('登录态无效'))
         } else {
@@ -60,8 +54,7 @@ function request({ url, method = 'GET', data = {}, auth = true, _retryCount = 0 
         }
       },
       fail(err) {
-        // 连接失败时自动降级到 Mock 模式
-        console.warn('⚠️ 请求失败，自动降级到 Mock 模式:', url)
+        console.warn('⚠️ 云托管请求失败，自动降级到 Mock 模式:', url, err)
         app.globalData.mockMode = true
         const fullUrl = `${app.globalData.baseUrl}${url}`
         const mockRes = mockRequest(fullUrl, method, data)

@@ -200,6 +200,27 @@ exports.update = async (req, res) => {
 }
 
 /**
+ * 加入行程
+ * POST /api/trips/:id/join
+ */
+exports.join = async (req, res) => {
+  try {
+    const trip = await Trip.findById(req.params.id)
+    if (!trip) return fail(res, '行程不存在', 404)
+
+    if (String(trip.userId) === String(req.userId)) {
+      return fail(res, '不能加入自己的行程')
+    }
+
+    // TODO: 后续可扩展 Trip Schema 增加 members 字段做完整的成员管理
+    success(res, { joined: true }, '加入成功')
+  } catch (err) {
+    console.error('加入行程失败:', err)
+    fail(res, '加入失败，请稍后重试', 500)
+  }
+}
+
+/**
  * 删除行程
  * DELETE /api/trips/:id
  */

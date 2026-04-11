@@ -6,8 +6,11 @@ App({
   globalData: {
     userInfo: null,
     token: null,
-    baseUrl: 'http://localhost:3000/api',
-    socketUrl: 'ws://localhost:3000',
+    baseUrl: 'https://travel-buddy-api-245308-5-1421335349.sh.run.tcloudbase.com/api',
+    socketUrl: 'wss://travel-buddy-api-245308-5-1421335349.sh.run.tcloudbase.com',
+    // 云托管配置
+    cloudEnvId: 'travel-buddy-9g8o0j44c308f266',
+    cloudServiceName: 'travel-buddy-api',
     // Mock 模式：后端不可达时自动启用
     mockMode: false
   },
@@ -21,6 +24,12 @@ App({
     this._readyPromise = new Promise((resolve) => {
       self._readyResolve = resolve
     })
+    // 初始化云开发 SDK
+    wx.cloud.init({
+      env: this.globalData.cloudEnvId,
+      traceUser: false
+    })
+    console.log('☁️ 云开发 SDK 已初始化，env:', this.globalData.cloudEnvId)
     // 开始检测后端
     this.detectBackend()
   },
@@ -38,25 +47,32 @@ App({
    */
   detectBackend() {
     const self = this
-    wx.request({
-      url: `${this.globalData.baseUrl}/health`,
+    // 显示连接中提示
+    wx.showToast({ title: '连接服务器中...', icon: 'loading', duration: 5000, mask: false })
+
+    wx.cloud.callContainer({
+      config: { env: this.globalData.cloudEnvId },
+      path: '/api/health',
       method: 'GET',
-      timeout: 3000,
+      header: { 'X-WX-SERVICE': this.globalData.cloudServiceName },
       success(res) {
+        wx.hideToast()
         if (res.statusCode === 200) {
-          console.log('✅ 后端已连接')
+          console.log('✅ 云托管后端已连接')
+          wx.showToast({ title: '✅ 服务器已连接', icon: 'none', duration: 1500 })
           self.globalData.mockMode = false
-          self.checkLoginStatus().then(() => {
-            self._readyResolve()
-          })
+          self.checkLoginStatus().then(() => self._readyResolve())
         } else {
           console.warn('⚠️ 后端响应异常，切换到 Mock 模式')
+          wx.showToast({ title: '⚠️ 服务异常，使用演示数据', icon: 'none', duration: 2000 })
           self.enableMockMode()
           self._readyResolve()
         }
       },
-      fail() {
-        console.warn('⚠️ 后端不可达，自动切换 Mock 模式')
+      fail(err) {
+        wx.hideToast()
+        console.warn('⚠️ 云托管不可达，自动切换 Mock 模式:', err)
+        wx.showToast({ title: '⚠️ 无法连接服务器，使用演示数据', icon: 'none', duration: 2500 })
         self.enableMockMode()
         self._readyResolve()
       }

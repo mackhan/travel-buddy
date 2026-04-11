@@ -41,7 +41,7 @@ app.use((err, req, res, next) => {
   })
 })
 
-// ====== Socket.io ======
+// ====== WebSocket ======
 initSocket(server)
 
 // ====== 数据库连接 & 启动服务 ======
