@@ -56,10 +56,12 @@ const startServer = () => {
 }
 
 // 同步数据库表结构并启动
-sequelize.authenticate()
+const { ensureDatabase } = require('./db')
+ensureDatabase()
+  .then(() => sequelize.authenticate())
   .then(() => {
     console.log('✅ MySQL 已连接')
-    return sequelize.sync({ alter: true })  // 自动建表/更新表结构
+    return sequelize.sync({ alter: true })
   })
   .then(() => {
     console.log('✅ 数据库表同步完成')
