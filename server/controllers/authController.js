@@ -10,8 +10,10 @@ exports.login = async (req, res) => {
     const { code, nickName, avatarUrl, gender } = req.body
     if (!code) return fail(res, '缺少登录 code')
 
+    const https = require('https')
     const wxRes = await axios.get('https://api.weixin.qq.com/sns/jscode2session', {
-      params: { appid: config.wx.appId, secret: config.wx.appSecret, js_code: code, grant_type: 'authorization_code' }
+      params: { appid: config.wx.appId, secret: config.wx.appSecret, js_code: code, grant_type: 'authorization_code' },
+      httpsAgent: new https.Agent({ rejectUnauthorized: false })
     })
 
     const { openid, errcode, errmsg } = wxRes.data
