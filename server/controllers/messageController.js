@@ -1,123 +1,60 @@
-// controllers/messageController.js - 消息控制器
-const mongoose = require('mongoose')
+// controllers/messageController.js
+const { Op, fn, col, literal } = require('sequelize')
+const sequelize = require('../db')
 const Message = require('../models/Message')
 const User = require('../models/User')
 const { success, fail, parsePagination } = require('../utils/helpers')
 
-/**
- * 获取对话列表
- * GET /api/messages/conversations
- */
 exports.getConversations = async (req, res) => {
   try {
-    const userId = new mongoose.Types.ObjectId(req.userId)
+    const userId = req.userId
+    // 每个会话取最新一条消息
+    const latestIds = await sequelize.query(`
+      SELECT MAX(id) as id FROM messages
+      WHERE sender_id = :uid OR receiver_id = :uid
+      GROUP BY conversation_id
+    `, { replacements: { uid: userId }, type: sequelize.QueryTypes.SELECT })
 
-    // 聚合获取每个对话的最新消息
-    const conversations = await Message.aggregate([
-      {
-        $match: {
-          $or: [{ senderId: userId }, { receiverId: userId }]
-        }
-      },
-      { $sort: { createdAt: -1 } },
-      {
-        $group: {
-          _id: '$conversationId',
-          lastMessage: { $first: '$$ROOT' },
-          unreadCount: {
-            $sum: {
-              $cond: [
-                { $and: [{ $eq: ['$receiverId', userId] }, { $eq: ['$read', false] }] },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      },
-      { $sort: { 'lastMessage.createdAt': -1 } }
-    ])
+    if (!latestIds.length) return success(res, [])
 
-    // 填充对方用户信息
-    const result = await Promise.all(
-      conversations.map(async (conv) => {
-        const msg = conv.lastMessage
-        const otherUserId = msg.senderId.toString() === userId.toString()
-          ? msg.receiverId
-          : msg.senderId
+    const ids = latestIds.map(r => r.id)
+    const messages = await Message.findAll({
+      where: { id: { [Op.in]: ids } },
+      order: [['createdAt', 'DESC']]
+    })
 
-        const otherUser = await User.findById(otherUserId)
-          .select('nickname avatar creditScore')
-          .lean()
-
-        return {
-          conversationId: conv._id,
-          otherUser,
-          lastMessage: {
-            content: msg.content,
-            type: msg.type,
-            createdAt: msg.createdAt
-          },
-          unreadCount: conv.unreadCount
-        }
-      })
-    )
+    const result = await Promise.all(messages.map(async (msg) => {
+      const otherUserId = msg.senderId === userId ? msg.receiverId : msg.senderId
+      const otherUser = await User.findByPk(otherUserId, { attributes: ['id', 'nickname', 'avatar', 'creditScore'] })
+      const unreadCount = await Message.count({ where: { conversationId: msg.conversationId, receiverId: userId, read: false } })
+      return { conversationId: msg.conversationId, otherUser, lastMessage: { content: msg.content, type: msg.type, createdAt: msg.createdAt }, unreadCount }
+    }))
 
     success(res, result)
-  } catch (err) {
-    console.error('获取对话列表失败:', err)
-    fail(res, '获取对话列表失败', 500)
-  }
+  } catch (err) { console.error('获取对话列表失败:', err); fail(res, '获取对话列表失败', 500) }
 }
 
-/**
- * 获取历史消息
- * GET /api/messages/:conversationId
- */
 exports.getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params
     const { page, limit, skip } = parsePagination(req.query)
-    const userId = new mongoose.Types.ObjectId(req.userId)
 
-    const [messages, total] = await Promise.all([
-      Message.find({ conversationId })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .populate('senderId', 'nickname avatar')
-        .lean(),
-      Message.countDocuments({ conversationId })
-    ])
-
-    // 标记为已读
-    await Message.updateMany(
-      { conversationId, receiverId: userId, read: false },
-      { $set: { read: true } }
-    )
-
-    success(res, {
-      list: messages.reverse(),  // 按时间正序返回
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    const { count, rows } = await Message.findAndCountAll({
+      where: { conversationId },
+      order: [['createdAt', 'DESC']],
+      offset: skip, limit,
+      include: [{ model: User, as: 'sender', attributes: ['id', 'nickname', 'avatar'] }]
     })
-  } catch (err) {
-    fail(res, '获取消息失败', 500)
-  }
+
+    await Message.update({ read: true }, { where: { conversationId, receiverId: req.userId, read: false } })
+
+    success(res, { list: rows.reverse(), pagination: { page, limit, total: count, totalPages: Math.ceil(count / limit) } })
+  } catch (err) { fail(res, '获取消息失败', 500) }
 }
 
-/**
- * 获取未读消息总数
- * GET /api/messages/unread/count
- */
 exports.getUnreadCount = async (req, res) => {
   try {
-    const userId = new mongoose.Types.ObjectId(req.userId)
-    const count = await Message.countDocuments({
-      receiverId: userId,
-      read: false
-    })
+    const count = await Message.count({ where: { receiverId: req.userId, read: false } })
     success(res, { count })
-  } catch (err) {
-    fail(res, '获取未读数失败', 500)
-  }
+  } catch (err) { fail(res, '获取未读数失败', 500) }
 }

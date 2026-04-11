@@ -1,57 +1,22 @@
-// models/Trip.js - 行程模型
-const mongoose = require('mongoose')
+// models/Trip.js
+const { DataTypes } = require('sequelize')
+const sequelize = require('../db')
 
-const tripSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true
-  },
-  destination: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  startDate: {
-    type: Date,
-    required: true
-  },
-  endDate: {
-    type: Date,
-    required: true
-  },
+const Trip = sequelize.define('Trip', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  userId: { type: DataTypes.INTEGER, allowNull: false },
+  destination: { type: DataTypes.STRING(100), allowNull: false },
+  startDate: { type: DataTypes.DATE, allowNull: false },
+  endDate: { type: DataTypes.DATE, allowNull: false },
   tags: {
-    type: [String],      // ['拼车', '拼房', '拼行程', '拼饭', '拼门票']
-    default: [],
-    validate: {
-      validator: (v) => v.length > 0,
-      message: '至少选择一个标签'
-    }
+    type: DataTypes.TEXT,
+    defaultValue: '[]',
+    get() { try { return JSON.parse(this.getDataValue('tags')) } catch { return [] } },
+    set(v) { this.setDataValue('tags', JSON.stringify(v || [])) }
   },
-  description: {
-    type: String,
-    default: '',
-    maxlength: 500
-  },
-  maxMembers: {
-    type: Number,
-    default: 0   // 0 表示不限
-  },
-  status: {
-    type: String,
-    enum: ['active', 'completed', 'cancelled'],
-    default: 'active'
-  }
-}, {
-  timestamps: true
-})
+  description: { type: DataTypes.STRING(500), defaultValue: '' },
+  maxMembers: { type: DataTypes.INTEGER, defaultValue: 0 },
+  status: { type: DataTypes.ENUM('active', 'completed', 'cancelled'), defaultValue: 'active' }
+}, { tableName: 'trips', timestamps: true, underscored: true })
 
-// 文本索引（支持目的地关键词搜索）
-tripSchema.index({ destination: 'text' })
-
-// 复合索引（加速匹配查询）
-tripSchema.index({ startDate: 1, endDate: 1, status: 1 })
-tripSchema.index({ status: 1, createdAt: -1 })
-
-module.exports = mongoose.model('Trip', tripSchema)
+module.exports = Trip

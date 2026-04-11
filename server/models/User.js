@@ -1,54 +1,24 @@
-// models/User.js - 用户模型
-const mongoose = require('mongoose')
+// models/User.js
+const { DataTypes } = require('sequelize')
+const sequelize = require('../db')
 
-const userSchema = new mongoose.Schema({
-  openid: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true
-  },
-  nickname: {
-    type: String,
-    default: '旅行者'
-  },
-  avatar: {
-    type: String,
-    default: ''
-  },
-  gender: {
-    type: Number,  // 0-未知 1-男 2-女
-    default: 0
-  },
-  age: {
-    type: String,
-    default: ''    // 年龄段：'90后', '00后' 等
-  },
-  bio: {
-    type: String,
-    default: '',
-    maxlength: 200
-  },
+const User = sequelize.define('User', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  openid: { type: DataTypes.STRING(64), allowNull: false, unique: true },
+  nickname: { type: DataTypes.STRING(50), defaultValue: '旅行者' },
+  avatar: { type: DataTypes.STRING(500), defaultValue: '' },
+  gender: { type: DataTypes.TINYINT, defaultValue: 0 },
+  age: { type: DataTypes.STRING(20), defaultValue: '' },
+  bio: { type: DataTypes.STRING(200), defaultValue: '' },
   travelPrefs: {
-    type: [String],  // 旅行偏好标签
-    default: []
+    type: DataTypes.TEXT,
+    defaultValue: '[]',
+    get() { try { return JSON.parse(this.getDataValue('travelPrefs')) } catch { return [] } },
+    set(v) { this.setDataValue('travelPrefs', JSON.stringify(v || [])) }
   },
-  creditScore: {
-    type: Number,
-    default: 5.0,    // 默认 5 分满分
-    min: 0,
-    max: 5
-  },
-  reviewCount: {
-    type: Number,
-    default: 0
-  },
-  tripCount: {
-    type: Number,
-    default: 0
-  }
-}, {
-  timestamps: true
-})
+  creditScore: { type: DataTypes.FLOAT, defaultValue: 5.0 },
+  reviewCount: { type: DataTypes.INTEGER, defaultValue: 0 },
+  tripCount: { type: DataTypes.INTEGER, defaultValue: 0 }
+}, { tableName: 'users', timestamps: true, underscored: true })
 
-module.exports = mongoose.model('User', userSchema)
+module.exports = User

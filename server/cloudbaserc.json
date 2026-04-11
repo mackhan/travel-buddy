@@ -1,0 +1,6 @@
+{
+  "envId": "travel-buddy-9g8o0j44c308f266",
+  "cloudrun": {
+    "name": "travel-buddy-api"
+  }
+}

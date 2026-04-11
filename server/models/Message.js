@@ -1,44 +1,15 @@
-// models/Message.js - 消息模型
-const mongoose = require('mongoose')
+// models/Message.js
+const { DataTypes } = require('sequelize')
+const sequelize = require('../db')
 
-const messageSchema = new mongoose.Schema({
-  conversationId: {
-    type: String,
-    required: true,
-    index: true
-  },
-  senderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  receiverId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  content: {
-    type: String,
-    required: true,
-    maxlength: 2000
-  },
-  type: {
-    type: String,
-    enum: ['text', 'image', 'system'],
-    default: 'text'
-  },
-  read: {
-    type: Boolean,
-    default: false
-  }
-}, {
-  timestamps: true
-})
+const Message = sequelize.define('Message', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  conversationId: { type: DataTypes.STRING(100), allowNull: false },
+  senderId: { type: DataTypes.INTEGER, allowNull: false },
+  receiverId: { type: DataTypes.INTEGER, allowNull: false },
+  content: { type: DataTypes.TEXT, allowNull: false },
+  type: { type: DataTypes.ENUM('text', 'image', 'system'), defaultValue: 'text' },
+  read: { type: DataTypes.BOOLEAN, defaultValue: false }
+}, { tableName: 'messages', timestamps: true, underscored: true })
 
-// 复合索引：对话消息列表查询（按时间倒序）
-messageSchema.index({ conversationId: 1, createdAt: -1 })
-
-// 未读消息查询索引
-messageSchema.index({ receiverId: 1, read: 1 })
-
-module.exports = mongoose.model('Message', messageSchema)
+module.exports = Message

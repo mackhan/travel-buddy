@@ -2,19 +2,17 @@
 const express = require('express')
 const http = require('http')
 const cors = require('cors')
-const mongoose = require('mongoose')
 const config = require('./config')
+const sequelize = require('./db')
 const { initSocket } = require('./services/socketService')
 
 const app = express()
 const server = http.createServer(app)
 
-// ====== 中间件 ======
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// ====== 路由 ======
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/users', require('./routes/user'))
 app.use('/api/trips', require('./routes/trip'))
@@ -22,42 +20,53 @@ app.use('/api/messages', require('./routes/message'))
 app.use('/api/reviews', require('./routes/review'))
 app.use('/api/expenses', require('./routes/expense'))
 
-// 健康检查
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })
 })
 
-// 404 兜底
 app.use((req, res) => {
   res.status(404).json({ code: -1, message: `接口不存在: ${req.method} ${req.path}` })
 })
 
-// 全局错误处理
 app.use((err, req, res, next) => {
   console.error('服务器错误:', err.stack)
-  res.status(err.status || 500).json({
-    message: err.message || '服务器内部错误',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  })
+  res.status(err.status || 500).json({ message: err.message || '服务器内部错误' })
 })
 
-// ====== WebSocket ======
 initSocket(server)
 
-// ====== 数据库连接 & 启动服务 ======
+// 设置 Model 关联
+const User = require('./models/User')
+const Trip = require('./models/Trip')
+const Message = require('./models/Message')
+const Review = require('./models/Review')
+const Expense = require('./models/Expense')
+
+Trip.belongsTo(User, { foreignKey: 'userId', as: 'user' })
+Message.belongsTo(User, { foreignKey: 'senderId', as: 'sender' })
+Review.belongsTo(User, { foreignKey: 'fromUserId', as: 'fromUser' })
+Review.belongsTo(User, { foreignKey: 'toUserId', as: 'toUser' })
+Review.belongsTo(Trip, { foreignKey: 'tripId', as: 'trip' })
+Expense.belongsTo(User, { foreignKey: 'creatorId', as: 'creator' })
+
 const startServer = () => {
   server.listen(config.port, () => {
     console.log(`🚀 服务已启动: http://localhost:${config.port}`)
   })
 }
 
-mongoose.connect(config.mongoUri, { serverSelectionTimeoutMS: 3000 })
+// 同步数据库表结构并启动
+sequelize.authenticate()
   .then(() => {
-    console.log('✅ MongoDB 已连接')
+    console.log('✅ MySQL 已连接')
+    return sequelize.sync({ alter: true })  // 自动建表/更新表结构
+  })
+  .then(() => {
+    console.log('✅ 数据库表同步完成')
     startServer()
   })
   .catch(err => {
-    console.warn('⚠️  MongoDB 连接失败，以降级模式启动（前端将使用 Mock 数据）:', err.message)
+    console.warn('⚠️  数据库连接失败，服务仍启动（接口将返回错误）:', err.message)
     startServer()
   })
 
