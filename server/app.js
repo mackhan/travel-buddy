@@ -45,16 +45,20 @@ app.use((err, req, res, next) => {
 initSocket(server)
 
 // ====== 数据库连接 & 启动服务 ======
-mongoose.connect(config.mongoUri)
+const startServer = () => {
+  server.listen(config.port, () => {
+    console.log(`🚀 服务已启动: http://localhost:${config.port}`)
+  })
+}
+
+mongoose.connect(config.mongoUri, { serverSelectionTimeoutMS: 3000 })
   .then(() => {
     console.log('✅ MongoDB 已连接')
-    server.listen(config.port, () => {
-      console.log(`🚀 服务已启动: http://localhost:${config.port}`)
-    })
+    startServer()
   })
   .catch(err => {
-    console.error('❌ MongoDB 连接失败:', err.message)
-    process.exit(1)
+    console.warn('⚠️  MongoDB 连接失败，以降级模式启动（前端将使用 Mock 数据）:', err.message)
+    startServer()
   })
 
 module.exports = app
