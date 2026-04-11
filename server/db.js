@@ -4,7 +4,7 @@ const mysql2 = require('mysql2/promise')
 
 let sequelize
 
-const dbName = process.env.MYSQL_DATABASE || 'wxcloudrun'
+const dbName = process.env.MYSQL_DATABASE || 'travel_buddy'
 
 async function ensureDatabase(host, port, user, password) {
   const conn = await mysql2.createConnection({ host, port, user, password })
@@ -42,7 +42,7 @@ const { Sequelize: Seq } = require('sequelize')
 if (process.env.MYSQL_ADDRESS) {
   const [host, port] = process.env.MYSQL_ADDRESS.split(':')
   sequelize = new Seq(
-    process.env.MYSQL_DATABASE || 'wxcloudrun',
+    process.env.MYSQL_DATABASE || 'travel_buddy',
     process.env.MYSQL_USERNAME,
     process.env.MYSQL_PASSWORD,
     {
