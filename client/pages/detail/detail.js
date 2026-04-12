@@ -36,8 +36,11 @@ Page({
         return
       }
 
+      // 兼容 MySQL(trip.user) 和 MongoDB(trip.userId) 两种结构
+      const author = trip.user || trip.userId || {}
       const app = getApp()
-      const isOwner = trip.userId._id === (app.globalData.userInfo && app.globalData.userInfo.id)
+      const myId = app.globalData.userInfo && (app.globalData.userInfo.id || app.globalData.userInfo._id)
+      const isOwner = String(author.id || author._id) === String(myId)
 
       const startDateText = formatDate(trip.startDate, 'MM月DD日')
       const endDateText = formatDate(trip.endDate, 'MM月DD日')
@@ -45,82 +48,78 @@ Page({
         (new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)
       ))
 
-      const starInfo = getStars(trip.userId.creditScore)
+      const starInfo = getStars(author.creditScore || 5)
       const fullStars = new Array(starInfo.full).fill(true)
       const emptyStars = new Array(5 - starInfo.full).fill(true)
 
-      this.setData({
-        trip,
-        loading: false,
-        isOwner,
-        startDateText,
-        endDateText,
-        days,
-        fullStars,
-        emptyStars
-      })
+      // 统一把作者信息挂到 trip.user
+      trip.user = author
+
+      this.setData({ trip, loading: false, isOwner, startDateText, endDateText, days, fullStars, emptyStars })
     } catch (e) {
+      console.error('加载行程失败:', e)
       this.setData({ loading: false })
       wx.showToast({ title: '加载失败', icon: 'none' })
     }
   },
 
-  // 申请同行
   async joinTrip() {
     try {
-      await post(`/trips/${this.data.trip._id}/join`)
+      const id = this.data.trip.id || this.data.trip._id
+      await post(`/trips/${id}/join`)
       wx.showToast({ title: '已申请同行', icon: 'success' })
-      this.loadTrip(this.data.trip._id)
-    } catch (e) {
-      wx.showToast({ title: '申请失败', icon: 'none' })
-    }
+      this.loadTrip(id)
+    } catch (e) { wx.showToast({ title: '申请失败', icon: 'none' }) }
   },
 
-  // 发起私信
   startChat() {
     const app = getApp()
-    const myId = app.globalData.userInfo && app.globalData.userInfo.id
-    const otherId = this.data.trip.userId._id
+    const myId = app.globalData.userInfo && (app.globalData.userInfo.id || app.globalData.userInfo._id)
+    const author = this.data.trip.user || {}
+    const otherId = author.id || author._id
     const conversationId = getConversationId(myId, otherId)
-
     wx.navigateTo({
-      url: `/pages/chat/chat?conversationId=${conversationId}&userId=${otherId}&nickname=${this.data.trip.userId.nickname}`
+      url: `/pages/chat/chat?conversationId=${conversationId}&userId=${otherId}&nickname=${author.nickname}`
     })
   },
 
-  // 查看用户主页
-  viewProfile() {
-    // 暂时跳转到个人中心
+  republishTrip() {
+    const trip = this.data.trip
+    // 把当前行程数据传给发布页，让用户修改日期后重新发布
+    const params = encodeURIComponent(JSON.stringify({
+      destination: trip.destination,
+      title: trip.title || '',
+      tags: trip.tags || [],
+      description: trip.description || '',
+      maxMembers: trip.maxMembers || 0
+    }))
+    wx.navigateTo({ url: `/pages/publish/publish?prefill=${params}` })
+  },
+    const author = this.data.trip && this.data.trip.user
+    if (!author) return
+    const id = author.id || author._id
+    wx.navigateTo({ url: `/pages/profile/profile?userId=${id}` })
   },
 
-  // 取消行程
   async cancelTrip() {
     const res = await new Promise(resolve => {
-      wx.showModal({
-        title: '确认取消',
-        content: '确定要取消这个行程吗？',
-        success: resolve
-      })
+      wx.showModal({ title: '确认取消', content: '确定要取消这个行程吗？', success: resolve })
     })
     if (!res.confirm) return
-
     try {
-      await put(`/trips/${this.data.trip._id}`, { status: 'cancelled' })
+      const id = this.data.trip.id || this.data.trip._id
+      await put(`/trips/${id}`, { status: 'cancelled' })
       wx.showToast({ title: '已取消', icon: 'success' })
-      this.loadTrip(this.data.trip._id)
-    } catch (e) {
-      wx.showToast({ title: '操作失败', icon: 'none' })
-    }
+      this.loadTrip(id)
+    } catch (e) { wx.showToast({ title: '操作失败', icon: 'none' }) }
   },
 
-  // 标记完成
   async completeTrip() {
     try {
-      await put(`/trips/${this.data.trip._id}`, { status: 'completed' })
-      wx.showToast({ title: '已完成', icon: 'success' })
-      this.loadTrip(this.data.trip._id)
-    } catch (e) {
-      wx.showToast({ title: '操作失败', icon: 'none' })
-    }
+      const id = this.data.trip.id || this.data.trip._id
+      await put(`/trips/${id}`, { status: 'completed' })
+      wx.showToast({ title: '行程已完成 🎉', icon: 'success', duration: 2000 })
+      setTimeout(() => wx.navigateBack(), 2000)
+    } catch (e) { wx.showToast({ title: '操作失败', icon: 'none' }) }
   }
 })

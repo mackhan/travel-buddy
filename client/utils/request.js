@@ -36,7 +36,8 @@ function request({ url, method = 'GET', data = {}, auth = true, _retryCount = 0 
         ...header,
         'X-WX-SERVICE': app.globalData.cloudServiceName
       },
-      data,
+      data: (method !== 'GET' && data && Object.keys(data).length) ? JSON.stringify(data) : data,
+      timeout: 15000,
       success(res) {
         if (res.statusCode === 200) {
           resolve(res.data)

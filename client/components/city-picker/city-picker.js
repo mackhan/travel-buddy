@@ -87,6 +87,22 @@ Component({
       }
     },
 
+    onSearchConfirm(e) {
+      // 按回车：如果有结果选第一个，没有就直接用输入值
+      const keyword = e.detail.value.trim()
+      if (!keyword) return
+      if (this.data.searchResults.length > 0) {
+        this._select(this.data.searchResults[0].label)
+      } else {
+        this._select(keyword)
+      }
+    },
+
+    onUseKeyword() {
+      const keyword = this.data.keyword.trim()
+      if (keyword) this._select(keyword)
+    },
+
     clearSearch() {
       this.setData({ keyword: '', showSearchResults: false, searchResults: [] })
     },

@@ -1,27 +1,42 @@
 <!-- pages/profile/profile.wxml -->
 <view class="page-profile">
+
+  <!-- 未登录状态 -->
+  <view class="not-login-card" wx:if="{{!isLoggedIn}}">
+    <image class="not-login-avatar" src="/assets/default-avatar.png" mode="aspectFill" />
+    <view class="not-login-text">你还未登录</view>
+    <view class="not-login-sub">登录后查看个人信息和行程记录</view>
+    <view class="not-login-btn" bindtap="doLogin">微信一键登录</view>
+  </view>
+
+  <!-- 已登录状态 -->
+  <block wx:if="{{isLoggedIn}}">
   <!-- 个人信息卡 -->
   <view class="profile-hero">
     <view class="hero-bg-gradient"></view>
     <view class="profile-card">
-      <image class="profile-avatar" src="{{userInfo.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
-      <view class="profile-name">{{userInfo.nickname || '旅行者'}}</view>
-      <view class="profile-bio" wx:if="{{userInfo.bio}}">{{userInfo.bio}}</view>
-      <view class="profile-bio" wx:else>点击编辑，添加你的个人介绍</view>
+      <!-- 头像（可点击上传） -->
+      <view class="avatar-wrap" bindtap="chooseAvatar">
+        <image class="profile-avatar" src="{{userInfo.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+        <view class="avatar-edit-badge">📷</view>
+      </view>
+      <view class="profile-name" bindtap="goEditProfile">{{userInfo.nickname || '旅行者'}} ✏️</view>
+      <view class="profile-bio" bindtap="goEditProfile" wx:if="{{userInfo.bio}}">{{userInfo.bio}}</view>
+      <view class="profile-bio profile-bio-hint" bindtap="goEditProfile" wx:else>点击编辑，添加你的个人介绍</view>
 
       <!-- 数据统计 -->
       <view class="stats-row">
-        <view class="stat-item">
+        <view class="stat-item" bindtap="showCreditInfo">
           <text class="stat-num">{{userInfo.creditScore || '5.0'}}</text>
           <text class="stat-label">信誉分</text>
         </view>
         <view class="stat-divider"></view>
-        <view class="stat-item">
+        <view class="stat-item" bindtap="goMyTrips">
           <text class="stat-num">{{userInfo.tripCount || 0}}</text>
           <text class="stat-label">行程</text>
         </view>
         <view class="stat-divider"></view>
-        <view class="stat-item">
+        <view class="stat-item" bindtap="goMyReviews">
           <text class="stat-num">{{userInfo.reviewCount || 0}}</text>
           <text class="stat-label">评价</text>
         </view>
@@ -87,7 +102,7 @@
       <view class="status-tab {{tripStatus === 'cancelled' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="cancelled">已取消</view>
     </view>
 
-    <view class="my-trip-item" wx:for="{{myTrips}}" wx:key="_id" bindtap="viewTrip" data-id="{{item._id}}">
+    <view class="my-trip-item" wx:for="{{myTrips}}" wx:key="id" bindtap="viewTrip" data-id="{{item.id || item._id}}">
       <view class="my-trip-top">
         <text class="my-trip-dest">📍 {{item.destination}}</text>
         <view class="my-trip-status status-{{item.status}}">
@@ -136,18 +151,22 @@
     </view>
   </view>
 
-  <!-- 编辑个人简介弹窗 -->
-  <view class="modal-mask" wx:if="{{showEditBio}}" bindtap="cancelEditBio">
-    <view class="modal-content" catchtap="">
-      <view class="modal-title">编辑个人简介</view>
+  <!-- 编辑资料弹窗 -->
+  <view class="modal-mask" wx:if="{{showEditBio}}" catchtap="cancelEditBio">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-title">编辑资料</view>
       <view class="modal-field">
+        <view class="modal-label">昵称</view>
+        <input class="modal-input" placeholder="输入昵称" value="{{editNickname}}" bindinput="onNicknameInput" maxlength="20" />
+      </view>
+      <view class="modal-field">
+        <view class="modal-label">个人介绍</view>
         <textarea
           class="bio-textarea"
           placeholder="介绍一下自己..."
           value="{{editBioValue}}"
           bindinput="onBioInput"
           maxlength="200"
-          auto-focus
         />
         <view class="char-count">{{editBioValue.length || 0}}/200</view>
       </view>
@@ -157,4 +176,5 @@
       </view>
     </view>
   </view>
+  </block>
 </view>

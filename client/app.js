@@ -6,11 +6,11 @@ App({
   globalData: {
     userInfo: null,
     token: null,
-    baseUrl: 'https://travel-buddy-api-245308-5-1421335349.sh.run.tcloudbase.com/api',
-    socketUrl: 'wss://travel-buddy-api-245308-5-1421335349.sh.run.tcloudbase.com',
-    // 云托管配置
-    cloudEnvId: 'travel-buddy-9g8o0j44c308f266',
-    cloudServiceName: 'travel-buddy-api',
+    baseUrl: 'https://express-37pl-245311-4-1421335349.sh.run.tcloudbase.com/api',
+    socketUrl: 'wss://express-37pl-245311-4-1421335349.sh.run.tcloudbase.com',
+    // 微信云托管配置
+    cloudEnvId: 'prod-1gs49bco623f3144',
+    cloudServiceName: 'express-37pl',
     // Mock 模式：后端不可达时自动启用
     mockMode: false
   },
@@ -43,18 +43,20 @@ App({
   },
 
   /**
-   * 检测后端是否可达
+   * 检测后端是否可达（带重试）
    */
-  detectBackend() {
+  detectBackend(retryCount = 0) {
     const self = this
-    // 显示连接中提示
-    wx.showToast({ title: '连接服务器中...', icon: 'loading', duration: 5000, mask: false })
+    if (retryCount === 0) {
+      wx.showToast({ title: '连接服务器中...', icon: 'loading', duration: 30000, mask: false })
+    }
 
     wx.cloud.callContainer({
       config: { env: this.globalData.cloudEnvId },
       path: '/api/health',
       method: 'GET',
       header: { 'X-WX-SERVICE': this.globalData.cloudServiceName },
+      timeout: 20000,
       success(res) {
         wx.hideToast()
         if (res.statusCode === 200) {
@@ -70,11 +72,17 @@ App({
         }
       },
       fail(err) {
-        wx.hideToast()
-        console.warn('⚠️ 云托管不可达，自动切换 Mock 模式:', err)
-        wx.showToast({ title: '⚠️ 无法连接服务器，使用演示数据', icon: 'none', duration: 2500 })
-        self.enableMockMode()
-        self._readyResolve()
+        console.warn(`⚠️ 连接失败(第${retryCount + 1}次):`, err.errMsg)
+        if (retryCount < 2) {
+          // 最多重试 2 次
+          setTimeout(() => self.detectBackend(retryCount + 1), 2000)
+        } else {
+          wx.hideToast()
+          console.warn('⚠️ 云托管不可达，自动切换 Mock 模式')
+          wx.showToast({ title: '⚠️ 无法连接服务器，使用演示数据', icon: 'none', duration: 2500 })
+          self.enableMockMode()
+          self._readyResolve()
+        }
       }
     })
   },

@@ -2,9 +2,9 @@
 <view class="trip-card" bindtap="onTap">
   <!-- 用户信息区 -->
   <view class="card-header">
-    <image class="user-avatar" src="{{trip.userId.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+    <image class="user-avatar" src="{{author.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
     <view class="user-info">
-      <view class="user-name">{{trip.userId.nickname || '旅行者'}}</view>
+      <view class="user-name">{{author.nickname || '旅行者'}}</view>
       <view class="user-credit">
         <block wx:for="{{stars}}" wx:key="index">
           <text class="star-icon {{item ? 'star-filled' : 'star-empty'}}">★</text>

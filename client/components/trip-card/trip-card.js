@@ -3,10 +3,7 @@ const { formatDate, timeAgo, getStars } = require('../../utils/util')
 
 Component({
   properties: {
-    trip: {
-      type: Object,
-      value: {}
-    }
+    trip: { type: Object, value: {} }
   },
 
   data: {
@@ -16,50 +13,37 @@ Component({
     endDateText: '',
     days: 0,
     timeText: '',
-    tagIcons: {
-      '拼车': '🚗',
-      '拼房': '🏨',
-      '拼行程': '🗺️',
-      '拼饭': '🍜',
-      '拼门票': '🎫'
-    }
+    author: {},
+    tagIcons: { '拼车': '🚗', '拼房': '🏨', '拼行程': '🗺️', '拼饭': '🍜', '拼门票': '🎫' }
   },
 
   observers: {
     'trip': function (trip) {
-      if (!trip || !trip.userId) return
+      if (!trip) return
+      // 兼容 MySQL(trip.user) 和 MongoDB(trip.userId)
+      const author = trip.user || trip.userId || {}
 
-      // 信誉星级
-      const score = trip.userId.creditScore || 5
+      const score = author.creditScore || 5
       const starInfo = getStars(score)
       const stars = []
       for (let i = 0; i < starInfo.full; i++) stars.push(true)
       for (let i = 0; i < starInfo.empty + starInfo.half; i++) stars.push(false)
 
-      // 日期
       const startDateText = formatDate(trip.startDate, 'MM-DD')
       const endDateText = formatDate(trip.endDate, 'MM-DD')
-      const days = Math.ceil(
+      const days = Math.max(1, Math.ceil(
         (new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)
-      )
+      ))
 
-      this.setData({
-        stars,
-        creditText: starInfo.score,
-        startDateText,
-        endDateText,
-        days: Math.max(1, days),
-        timeText: timeAgo(trip.createdAt)
-      })
+      this.setData({ author, stars, creditText: starInfo.score, startDateText, endDateText, days, timeText: timeAgo(trip.createdAt) })
     }
   },
 
   methods: {
     onTap() {
-      const id = this.properties.trip._id
-      if (id) {
-        wx.navigateTo({ url: `/pages/detail/detail?id=${id}` })
-      }
+      const trip = this.properties.trip
+      const id = trip.id || trip._id
+      if (id) wx.navigateTo({ url: `/pages/detail/detail?id=${id}` })
     }
   }
 })

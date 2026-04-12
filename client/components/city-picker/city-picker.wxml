@@ -12,9 +12,10 @@
       <text class="search-icon">🔍</text>
       <input
         class="search-input"
-        placeholder="搜索城市或国家"
+        placeholder="搜索城市，搜不到可直接输入"
         value="{{keyword}}"
         bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
         confirm-type="search"
       />
       <view class="search-clear" wx:if="{{keyword}}" bindtap="clearSearch">✕</view>
@@ -30,7 +31,10 @@
         <text class="result-text">{{item.label}}</text>
       </view>
       <view class="empty-result" wx:if="{{searchResults.length === 0}}">
-        <text>未找到相关城市</text>
+        <text class="empty-text">未找到「{{keyword}}」</text>
+        <view class="use-custom-btn" bindtap="onUseKeyword">
+          <text>✅ 直接使用「{{keyword}}」</text>
+        </view>
       </view>
     </scroll-view>
 

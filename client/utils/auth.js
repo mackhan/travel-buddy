@@ -21,17 +21,19 @@ function login() {
             'Content-Type': 'application/json',
             'X-WX-SERVICE': app.globalData.cloudServiceName
           },
-          data: { code: loginRes.code },
+          data: JSON.stringify({ code: loginRes.code }),
           success(res) {
+            console.log('🔍 登录响应:', JSON.stringify(res))
             if (res.statusCode === 200 && res.data && res.data.data && res.data.data.token) {
               resolve({ token: res.data.data.token, userInfo: res.data.data.userInfo })
             } else if (res.statusCode === 200 && res.data && res.data.token) {
               resolve({ token: res.data.token, userInfo: res.data.userInfo })
             } else {
-              reject(new Error((res.data && res.data.message) || '登录失败'))
+              reject(new Error((res.data && res.data.message) || `登录失败(${res.statusCode})`))
             }
           },
           fail(err) {
+            console.error('🔍 登录网络错误:', JSON.stringify(err))
             reject(new Error('后端不可达: ' + (err.errMsg || '')))
           }
         })

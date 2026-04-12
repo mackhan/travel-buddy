@@ -17,8 +17,25 @@ Page({
     showCityPicker: false
   },
 
-  onLoad() {
+  onLoad(options) {
     this.setData({ today: formatDate(new Date(), 'YYYY-MM-DD') })
+    // 支持从行程详情页「再发一次」带过来的预填数据
+    if (options.prefill) {
+      try {
+        const prefill = JSON.parse(decodeURIComponent(options.prefill))
+        this.setData({
+          destination: prefill.destination || '',
+          title: prefill.title || '',
+          tags: prefill.tags || [],
+          description: prefill.description || '',
+          maxMembers: prefill.maxMembers ? String(prefill.maxMembers) : ''
+        })
+        this.checkForm()
+        wx.showToast({ title: '已预填上次行程信息', icon: 'none', duration: 2000 })
+      } catch (e) {
+        console.warn('预填数据解析失败:', e)
+      }
+    }
   },
 
   // 打开城市选择器

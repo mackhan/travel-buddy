@@ -249,6 +249,13 @@
   box-shadow: 0 8rpx 24rpx rgba(82, 196, 26, 0.3);
 }
 
+.republish-btn {
+  background: linear-gradient(135deg, #12B7B5 0%, #0E9E9C 100%);
+  color: #FFFFFF;
+  box-shadow: 0 8rpx 24rpx rgba(18, 183, 181, 0.3);
+  flex: 1;
+}
+
 /* 加载 */
 .loading-page {
   display: flex;

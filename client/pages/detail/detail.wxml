@@ -30,16 +30,16 @@
 
   <!-- 发布者信息 -->
   <view class="section user-section" bindtap="viewProfile">
-    <image class="user-avatar" src="{{trip.userId.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+    <image class="user-avatar" src="{{trip.user.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
     <view class="user-info">
-      <view class="user-name">{{trip.userId.nickname}}</view>
+      <view class="user-name">{{trip.user.nickname || '旅行者'}}</view>
       <view class="user-meta">
         <view class="credit-stars">
           <text class="star-on" wx:for="{{fullStars}}" wx:key="index">★</text>
           <text class="star-off" wx:for="{{emptyStars}}" wx:key="index">★</text>
-          <text class="credit-num">{{trip.userId.creditScore}}</text>
+          <text class="credit-num">{{trip.user.creditScore || '5.0'}}</text>
         </view>
-        <text class="review-count">{{trip.userId.reviewCount || 0}}条评价</text>
+        <text class="review-count">{{trip.user.reviewCount || 0}}条评价</text>
       </view>
     </view>
     <view class="arrow-icon">›</view>
@@ -68,6 +68,10 @@
     </view>
     <view class="action-btn complete-btn" bindtap="completeTrip" wx:if="{{trip.status === 'active'}}">
       <text>✅ 标记完成</text>
+    </view>
+    <!-- 已完成/已取消：可以再发一次 -->
+    <view class="action-btn republish-btn" bindtap="republishTrip" wx:if="{{trip.status !== 'active'}}">
+      <text>🔄 再发一次</text>
     </view>
   </view>
 </view>

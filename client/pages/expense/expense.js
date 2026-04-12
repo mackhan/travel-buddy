@@ -43,6 +43,8 @@ Page({
     }
   },
 
+  stopPropagation() {},
+
   showCreateForm() {
     this.setData({ showForm: true })
   },
