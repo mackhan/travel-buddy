@@ -151,31 +151,71 @@
   <!-- 我的评价列表 -->
   <view class="review-list-section" wx:if="{{showReviews}}">
     <view class="section-header">
-      <text class="section-title">收到的评价</text>
+      <text class="section-title">我的评价</text>
       <view class="close-btn" bindtap="hideReviews">关闭</view>
     </view>
 
-    <view class="review-item" wx:for="{{myReviews}}" wx:key="_id">
-      <view class="review-top">
-        <image class="review-avatar" src="{{item.fromUserId.avatar}}" mode="aspectFill" />
-        <view class="review-info">
-          <text class="review-name">{{item.fromUserId.nickname}}</text>
-          <view class="review-stars">
-            <text class="star-on" wx:for="{{item.starArr}}" wx:for-item="s" wx:key="index">★</text>
-          </view>
-        </view>
-        <text class="review-time">{{item.timeText}}</text>
-      </view>
-      <view class="review-content" wx:if="{{item.content}}">{{item.content}}</view>
-      <view class="review-trip" wx:if="{{item.tripId}}">
-        行程：{{item.tripId.destination}}
-      </view>
+    <!-- Tab 切换（查看他人时只显示收到的评价） -->
+    <view class="review-tabs" wx:if="{{!isOtherUser}}">
+      <view
+        class="review-tab {{reviewTab === 'received' ? 'tab-active' : ''}}"
+        bindtap="switchReviewTab"
+        data-tab="received"
+      >收到的评价</view>
+      <view
+        class="review-tab {{reviewTab === 'sent' ? 'tab-active' : ''}}"
+        bindtap="switchReviewTab"
+        data-tab="sent"
+      >我写的评价</view>
     </view>
 
-    <view class="empty-state" wx:if="{{myReviews.length === 0}}">
-      <text class="empty-icon">⭐</text>
-      <text class="empty-text">还没有收到评价</text>
-    </view>
+    <!-- 收到的评价 -->
+    <block wx:if="{{reviewTab === 'received'}}">
+      <view class="review-item" wx:for="{{myReviews}}" wx:key="_id">
+        <view class="review-top">
+          <image class="review-avatar" src="{{item.fromUser.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+          <view class="review-info">
+            <text class="review-name">{{item.fromUser.nickname}}</text>
+            <view class="review-stars">
+              <text class="star-on" wx:for="{{item.starArr}}" wx:for-item="s" wx:key="index">★</text>
+            </view>
+          </view>
+          <text class="review-time">{{item.timeText}}</text>
+        </view>
+        <view class="review-content" wx:if="{{item.content}}">{{item.content}}</view>
+        <view class="review-trip" wx:if="{{item.trip}}">
+          行程：{{item.trip.destination}}
+        </view>
+      </view>
+      <view class="empty-state" wx:if="{{myReviews.length === 0}}">
+        <text class="empty-icon">⭐</text>
+        <text class="empty-text">还没有收到评价</text>
+      </view>
+    </block>
+
+    <!-- 我写的评价（仅自己可见） -->
+    <block wx:if="{{reviewTab === 'sent' && !isOtherUser}}">
+      <view class="review-item" wx:for="{{sentReviews}}" wx:key="_id">
+        <view class="review-top">
+          <image class="review-avatar" src="{{item.toUser.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+          <view class="review-info">
+            <text class="review-name">{{item.toUser.nickname}}</text>
+            <view class="review-stars">
+              <text class="star-on" wx:for="{{item.starArr}}" wx:for-item="s" wx:key="index">★</text>
+            </view>
+          </view>
+          <text class="review-time">{{item.timeText}}</text>
+        </view>
+        <view class="review-content" wx:if="{{item.content}}">{{item.content}}</view>
+        <view class="review-trip" wx:if="{{item.trip}}">
+          行程：{{item.trip.destination}}
+        </view>
+      </view>
+      <view class="empty-state" wx:if="{{sentReviews.length === 0}}">
+        <text class="empty-icon">✏️</text>
+        <text class="empty-text">还没有写过评价</text>
+      </view>
+    </block>
   </view>
 
   <!-- 编辑资料弹窗 -->

@@ -94,7 +94,23 @@ Page({
   async loadMembers(id) {
     try {
       const res = await get(`/trips/${id}/members`)
-      this.setData({ members: res.data || [] })
+      // 竞态保护：确认当前行程 id 与请求 id 一致
+      const currentTrip = this.data.trip
+      const currentId = currentTrip && (currentTrip.id || currentTrip._id)
+      if (String(currentId) !== String(id)) return
+      const owner = currentTrip.user
+      // ownerItem 确保 id 字段明确（防止 owner.id 为 undefined）
+      const ownerItem = owner
+        ? { user: { ...owner, id: owner.id || owner._id }, isOwner: true, status: 'owner', id: 'owner' }
+        : null
+      const participants = res.data || []
+      // 防御性去重：过滤掉 participants 中已含行程主的情况
+      const ownerId = owner && (owner.id || owner._id)
+      const filtered = ownerId
+        ? participants.filter(p => String(p.user && (p.user.id || p.user._id)) !== String(ownerId))
+        : participants
+      const members = ownerItem ? [ownerItem, ...filtered] : filtered
+      this.setData({ members })
     } catch (e) {
       console.error('加载成员失败:', e)
     }
@@ -219,11 +235,13 @@ Page({
     const author = this.data.trip && this.data.trip.user
     if (!author) return
     const id = author.id || author._id
+    if (!id) { console.warn('[viewProfile] author.id 为空', author); return }
     wx.navigateTo({ url: `/pages/profile/profile?userId=${id}` })
   },
 
   viewMemberProfile(e) {
     const userId = e.currentTarget.dataset.userId
+    if (!userId || userId === 'undefined') return
     wx.navigateTo({ url: `/pages/profile/profile?userId=${userId}` })
   },
 

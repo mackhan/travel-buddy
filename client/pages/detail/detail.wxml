@@ -52,7 +52,7 @@
     <view class="desc-content">{{trip.description}}</view>
   </view>
 
-  <!-- 已加入的成员列表 -->
+  <!-- 同行成员列表（含行程主排第一） -->
   <view class="section members-section" wx:if="{{members.length > 0}}">
     <view class="section-title">同行搭子（{{members.length}}人）</view>
     <view class="members-list">
@@ -64,14 +64,18 @@
         data-user-id="{{item.user.id}}"
       >
         <image class="member-avatar" src="{{item.user.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
-        <view class="member-name">{{item.user.nickname}}</view>
-        <!-- 行程完成后，非行程主且是已加入成员，可以评价行程主 -->
-        <view
-          class="review-btn-small"
-          wx:if="{{trip.status === 'completed' && !isOwner}}"
-          catchtap="goReviewOwner"
-        >评价</view>
-        <!-- 行程进行中，当前用户是自己，显示退出按钮 -->
+        <view class="member-info-col">
+          <view class="member-name-row">
+            <text class="member-name">{{item.user.nickname}}</text>
+            <view class="owner-badge" wx:if="{{item.isOwner}}">👑 发起人</view>
+          </view>
+          <view class="member-score-row">
+            <text class="member-star">★</text>
+            <text class="member-score">{{item.user.creditScore || '5.0'}}</text>
+            <text class="member-review-cnt">（{{item.user.reviewCount || 0}}条评价）</text>
+          </view>
+        </view>
+        <!-- 行程进行中，当前用户是自己（非行程主），显示退出按钮 -->
         <view
           class="leave-btn-small"
           wx:if="{{trip.status === 'active' && !isOwner && item.user.id == myId}}"
@@ -117,12 +121,20 @@
     </view>
   </view>
 
-  <!-- 行程完成后：行程主评价搭子们 -->
-  <view class="section review-section" wx:if="{{isOwner && trip.status === 'completed' && members.length > 0}}">
-    <view class="section-title">去评价你的搭子们</view>
-    <view class="review-member-item" wx:for="{{members}}" wx:key="id">
+  <!-- 行程完成后：所有参与者（含行程主）互评 -->
+  <view class="section review-section" wx:if="{{trip.status === 'completed' && members.length > 0}}">
+    <view class="section-title">去评价你的旅行搭子</view>
+    <view
+      class="review-member-item"
+      wx:for="{{members}}"
+      wx:key="id"
+      wx:if="{{item.user.id != myId}}"
+    >
       <image class="member-avatar" src="{{item.user.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
-      <view class="member-name flex-1">{{item.user.nickname}}</view>
+      <view class="member-name flex-1">
+        {{item.user.nickname}}
+        <text class="owner-badge-inline" wx:if="{{item.isOwner}}"> 发起人</text>
+      </view>
       <view
         class="review-btn"
         catchtap="goReview"

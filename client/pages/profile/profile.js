@@ -11,8 +11,10 @@ Page({
     viewingUserId: null,
     showTrips: false,
     showReviews: false,
+    reviewTab: 'received',   // 'received' | 'sent'
     myTrips: [],
-    myReviews: [],
+    myReviews: [],      // 收到的评价
+    sentReviews: [],    // 我写的评价
     tripStatus: '',
     showEditBio: false,
     editBioValue: '',
@@ -150,8 +152,18 @@ Page({
 
   // 我的评价
   async goMyReviews() {
-    this.setData({ showReviews: true, showTrips: false })
+    this.setData({ showReviews: true, showTrips: false, reviewTab: 'received' })
     this.loadMyReviews()
+  },
+
+  async switchReviewTab(e) {
+    const tab = e.currentTarget.dataset.tab
+    this.setData({ reviewTab: tab })
+    if (tab === 'received') {
+      this.loadMyReviews()
+    } else {
+      this.loadSentReviews()
+    }
   },
 
   async loadMyReviews() {
@@ -166,6 +178,20 @@ Page({
       this.setData({ myReviews: reviews })
     } catch (e) {
       console.error('加载评价失败', e)
+    }
+  },
+
+  async loadSentReviews() {
+    try {
+      const res = await get('/reviews/mine')
+      const reviews = (res.data.list || []).map(r => ({
+        ...r,
+        starArr: new Array(Math.round(r.score)).fill(true),
+        timeText: timeAgo(r.createdAt)
+      }))
+      this.setData({ sentReviews: reviews })
+    } catch (e) {
+      console.error('加载我写的评价失败', e)
     }
   },
 
@@ -278,7 +304,7 @@ Page({
   showAbout() {
     wx.showModal({
       title: '旅行搭子',
-      content: '版本 1.0.28\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
+      content: '版本 1.0.30\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
       showCancel: false
     })
   }

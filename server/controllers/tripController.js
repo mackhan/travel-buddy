@@ -8,7 +8,7 @@ const Message = require('../models/Message')
 const { sendToUsers, sendToUser } = require('../services/socketService')
 const { success, fail, parsePagination } = require('../utils/helpers')
 
-const userAttrs = ['id', 'nickname', 'avatar', 'creditScore']
+const userAttrs = ['id', 'nickname', 'avatar', 'creditScore', 'reviewCount']
 
 exports.create = async (req, res) => {
   try {
@@ -307,7 +307,7 @@ exports.getMembers = async (req, res) => {
 
     const members = await TripMember.findAll({
       where: { tripId: trip.id, status: 'approved' },
-      include: [{ model: User, as: 'user', attributes: ['id', 'nickname', 'avatar', 'creditScore'] }],
+      include: [{ model: User, as: 'user', attributes: ['id', 'nickname', 'avatar', 'creditScore', 'reviewCount'] }],
       order: [['createdAt', 'ASC']]
     })
     success(res, members)

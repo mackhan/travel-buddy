@@ -276,35 +276,91 @@
 }
 
 /* 成员列表 */
-.members-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24rpx;
-}
+.members-section { }
 
+/* 成员列表条目（横向行） */
 .member-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  width: 120rpx;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F5F7FA;
+}
+
+.member-item:last-child {
+  border-bottom: none;
 }
 
 .member-avatar {
-  width: 88rpx;
-  height: 88rpx;
+  width: 80rpx;
+  height: 80rpx;
   border-radius: 50%;
   border: 3rpx solid #E8F8F7;
+  flex-shrink: 0;
+}
+
+.member-info-col {
+  flex: 1;
+  margin-left: 20rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.member-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .member-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 600;
+}
+
+.owner-badge {
+  font-size: 20rpx;
+  color: #FF8C00;
+  background: #FFF3E0;
+  border-radius: 20rpx;
+  padding: 2rpx 12rpx;
+  margin-left: 12rpx;
+}
+
+.owner-badge-inline {
+  font-size: 20rpx;
+  color: #FF8C00;
+  margin-left: 8rpx;
+}
+
+.member-score-row {
+  display: flex;
+  align-items: center;
+  margin-top: 6rpx;
+}
+
+.member-star {
+  color: #FFB800;
+  font-size: 22rpx;
+}
+
+.member-score {
   font-size: 22rpx;
   color: #666;
-  margin-top: 8rpx;
-  text-align: center;
-  max-width: 110rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-left: 4rpx;
+}
+
+.member-review-cnt {
+  font-size: 20rpx;
+  color: #999;
+  margin-left: 4rpx;
+}
+
+/* members-list 改为纵向列表 */
+.members-list {
+  display: flex;
+  flex-direction: column;
 }
 
 .review-btn-small {
@@ -313,7 +369,7 @@
   border: 1rpx solid #12B7B5;
   padding: 4rpx 12rpx;
   border-radius: 100rpx;
-  margin-top: 6rpx;
+  flex-shrink: 0;
 }
 
 /* 申请列表 */

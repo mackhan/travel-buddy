@@ -64,7 +64,7 @@ const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
 const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
 
 async function run() {
-  console.log('\n🧪 旅行搭子 完整接口测试 v1.0.29\n' + '━'.repeat(55))
+  console.log('\n🧪 旅行搭子 完整接口测试 v1.0.30\n' + '━'.repeat(55))
 
   // ===== 1. 基础连接 =====
   console.log('\n[ 基础连接 ]')
@@ -215,10 +215,15 @@ async function run() {
       assert(r.status === 200, `status=${r.status}`)
       assert(Array.isArray(r.data.data), '返回值应为数组')
     })
-    await test('GET /api/trips/:id/members → 200 数组', async () => {
+    await test('GET /api/trips/:id/members → 200 数组含 reviewCount', async () => {
       const r = await request(`/api/trips/${createdTripId}/members`, 'GET', null, TEST_TOKEN)
       assert(r.status === 200, `status=${r.status}`)
       assert(Array.isArray(r.data.data), '返回值应为数组')
+      if (r.data.data.length > 0) {
+        const member = r.data.data[0]
+        assert(member.user !== undefined, '成员应含 user 字段')
+        assert('reviewCount' in member.user, `user 应含 reviewCount，实际: ${JSON.stringify(Object.keys(member.user))}`)
+      }
     })
 
     // 用另一个token模拟其他用户申请（外键限制下可能500，测试边界逻辑即可）
