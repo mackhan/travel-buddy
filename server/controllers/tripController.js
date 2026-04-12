@@ -8,15 +8,14 @@ const userAttrs = ['id', 'nickname', 'avatar', 'creditScore']
 
 exports.create = async (req, res) => {
   try {
-    const { destination, startDate, endDate, tags, description, maxMembers } = req.body
+    const { destination, title, startDate, endDate, tags, description, maxMembers } = req.body
     if (!destination || !startDate || !endDate || !tags || tags.length === 0)
       return fail(res, '请填写完整的行程信息')
     if (new Date(startDate) >= new Date(endDate)) return fail(res, '结束时间必须晚于出发时间')
-    // 只比较日期部分，忽略时区
     const today = new Date().toISOString().split('T')[0]
     if (startDate < today) return fail(res, '出发时间不能早于当前时间')
 
-    const trip = await Trip.create({ userId: req.userId, destination: destination.trim(), startDate, endDate, tags, description: description || '', maxMembers: maxMembers || 0 })
+    const trip = await Trip.create({ userId: req.userId, destination: destination.trim(), title: (title || '').trim(), startDate, endDate, tags, description: description || '', maxMembers: maxMembers || 0 })
     await User.increment('tripCount', { where: { id: req.userId } })
     success(res, trip, '行程发布成功')
   } catch (err) { console.error('发布行程失败:', err.message, err.stack); fail(res, `发布失败: ${err.message}`, 500) }
