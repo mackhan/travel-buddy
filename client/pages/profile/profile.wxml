@@ -111,8 +111,8 @@
         <text class="menu-arrow">›</text>
       </view>
     </view>
-  </view>
   </block>
+  </view>
 
   <!-- 行程/评价列表（内嵌） -->
   <view class="trip-list-section" wx:if="{{showTrips}}">

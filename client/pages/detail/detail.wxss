@@ -497,10 +497,6 @@
   border-radius: 100rpx;
   margin-left: 16rpx;
 }
-  background: #E0E0E0 !important;
-  color: #999 !important;
-  box-shadow: none !important;
-}
 
 .join-pending {
   background: #FFF3E0 !important;
