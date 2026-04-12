@@ -24,7 +24,7 @@ exports.create = async (req, res) => {
 
     const expense = await Expense.create({ creatorId: req.userId, tripId: tripId || null, title: title.trim(), totalAmount: totalCents, splitMode: splitMode || 'equal', participants: list })
     success(res, expense, '分摊单创建成功')
-  } catch (err) { console.error('创建分摊单失败:', err); fail(res, '创建失败', 500) }
+  } catch (err) { console.error('创建分摊单失败:', err.message); fail(res, `创建失败: ${err.message}`, 500) }
 }
 
 exports.getList = async (req, res) => {

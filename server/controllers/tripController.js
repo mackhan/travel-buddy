@@ -19,7 +19,7 @@ exports.create = async (req, res) => {
     const trip = await Trip.create({ userId: req.userId, destination: destination.trim(), startDate, endDate, tags, description: description || '', maxMembers: maxMembers || 0 })
     await User.increment('tripCount', { where: { id: req.userId } })
     success(res, trip, '行程发布成功')
-  } catch (err) { console.error('发布行程失败:', err); fail(res, '发布失败', 500) }
+  } catch (err) { console.error('发布行程失败:', err.message, err.stack); fail(res, `发布失败: ${err.message}`, 500) }
 }
 
 exports.search = async (req, res) => {
