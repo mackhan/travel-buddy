@@ -1,6 +1,6 @@
 // pages/profile/profile.js
 const { get, put } = require('../../utils/request')
-const { formatDate, timeAgo } = require('../../utils/util')
+const { formatDate, timeAgo, getConversationId } = require('../../utils/util')
 const { logout } = require('../../utils/auth')
 
 Page({
@@ -96,7 +96,6 @@ Page({
     const myId = app.globalData.userInfo && (app.globalData.userInfo.id || app.globalData.userInfo._id)
     const otherId = this.data.userInfo.id || this.data.userInfo._id
     if (!otherId) return
-    const { getConversationId } = require('../../utils/util')
     const conversationId = getConversationId(myId, otherId)
     wx.navigateTo({
       url: `/pages/chat/chat?conversationId=${conversationId}&userId=${otherId}&nickname=${this.data.userInfo.nickname}`
@@ -279,7 +278,7 @@ Page({
   showAbout() {
     wx.showModal({
       title: '旅行搭子',
-      content: '版本 1.0.25\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
+      content: '版本 1.0.28\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
       showCancel: false
     })
   }

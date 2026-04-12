@@ -18,7 +18,7 @@
 ### 后端
 - Node.js + Express.js
 - MongoDB + Mongoose
-- Socket.io（实时通信）
+- ws（原生 WebSocket，实时通信）
 - JWT（身份验证）
 
 ## 快速开始
