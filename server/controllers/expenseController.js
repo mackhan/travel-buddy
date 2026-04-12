@@ -31,14 +31,13 @@ exports.getList = async (req, res) => {
   try {
     const { page, limit, skip } = parsePagination(req.query)
     const sequelize = require('../db')
-    // participants 是 JSON 字段，用 LIKE 过滤当前用户
     const { count, rows } = await Expense.findAndCountAll({
-      where: sequelize.literal(`creator_id = ${req.userId} OR JSON_CONTAINS(participants, JSON_OBJECT('userId', ${req.userId}))`),
+      where: sequelize.literal(`creator_id = ${req.userId} OR participants LIKE '%"userId":${req.userId}%'`),
       order: [['createdAt', 'DESC']], offset: skip, limit,
       include: [{ model: User, as: 'creator', attributes: ['id', 'nickname', 'avatar'] }]
     })
     success(res, { list: rows, pagination: { page, limit, total: count, totalPages: Math.ceil(count / limit) } })
-  } catch (err) { fail(res, '获取分摊单失败', 500) }
+  } catch (err) { console.error('获取分摊单失败:', err); fail(res, '获取分摊单失败', 500) }
 }
 
 exports.getById = async (req, res) => {
