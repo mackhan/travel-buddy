@@ -86,11 +86,29 @@ exports.update = async (req, res) => {
 
 exports.join = async (req, res) => {
   try {
-    const trip = await Trip.findByPk(req.params.id)
+    const trip = await Trip.findByPk(req.params.id, {
+      include: [{ model: User, as: 'user', attributes: ['id', 'nickname'] }]
+    })
     if (!trip) return fail(res, '行程不存在', 404)
     if (trip.userId === req.userId) return fail(res, '不能加入自己的行程')
-    success(res, { joined: true }, '加入成功')
-  } catch (err) { fail(res, '加入失败', 500) }
+    if (trip.status !== 'active') return fail(res, '该行程已结束')
+
+    // 获取申请者信息
+    const applicant = await User.findByPk(req.userId, { attributes: ['id', 'nickname', 'avatar'] })
+
+    // 给行程发布者发系统消息通知
+    const Message = require('../models/Message')
+    const conversationId = [trip.userId, req.userId].sort().join('_')
+    await Message.create({
+      conversationId,
+      senderId: req.userId,
+      receiverId: trip.userId,
+      content: `【申请同行】${applicant ? applicant.nickname : '旅行者'} 想加入你的行程「${trip.destination}」，快去聊聊吧！`,
+      type: 'system'
+    })
+
+    success(res, { joined: true, conversationId }, '申请已发送，等待对方回复')
+  } catch (err) { console.error('申请同行失败:', err); fail(res, '申请失败', 500) }
 }
 
 exports.remove = async (req, res) => {
