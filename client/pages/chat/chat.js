@@ -225,5 +225,12 @@ Page({
     setTimeout(() => {
       this.setData({ scrollToId: 'chat-bottom' })
     }, 100)
+  },
+
+  /** 点击系统消息行程卡片，跳转到行程详情 */
+  goTripDetail(e) {
+    const tripId = e.currentTarget.dataset.tripId
+    if (!tripId) return
+    wx.navigateTo({ url: `/pages/detail/detail?id=${tripId}` })
   }
 })

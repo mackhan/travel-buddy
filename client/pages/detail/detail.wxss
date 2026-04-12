@@ -263,3 +263,175 @@
   justify-content: center;
   min-height: 80vh;
 }
+
+/* 满员徽标 */
+.full-badge {
+  margin-left: 16rpx;
+  background: rgba(255, 80, 80, 0.8);
+  padding: 4rpx 16rpx;
+  border-radius: 100rpx;
+  font-size: 22rpx;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+/* 成员列表 */
+.members-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+}
+
+.member-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120rpx;
+}
+
+.member-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  border: 3rpx solid #E8F8F7;
+}
+
+.member-name {
+  font-size: 22rpx;
+  color: #666;
+  margin-top: 8rpx;
+  text-align: center;
+  max-width: 110rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-btn-small {
+  font-size: 20rpx;
+  color: #12B7B5;
+  border: 1rpx solid #12B7B5;
+  padding: 4rpx 12rpx;
+  border-radius: 100rpx;
+  margin-top: 6rpx;
+}
+
+/* 申请列表 */
+.applicant-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F5F7FA;
+}
+
+.applicant-item:last-child {
+  border-bottom: none;
+}
+
+.applicant-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.applicant-info {
+  flex: 1;
+  margin-left: 16rpx;
+}
+
+.applicant-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1A1A2E;
+  margin-bottom: 6rpx;
+}
+
+.applicant-score {
+  display: flex;
+  align-items: center;
+}
+
+.score-num {
+  font-size: 24rpx;
+  color: #FAAD14;
+  margin-left: 4rpx;
+}
+
+.score-cnt {
+  font-size: 22rpx;
+  color: #999;
+  margin-left: 4rpx;
+}
+
+.applicant-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-approve {
+  background: linear-gradient(135deg, #12B7B5 0%, #0E9D9B 100%);
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 12rpx 28rpx;
+  border-radius: 100rpx;
+}
+
+.action-reject {
+  background: #F5F7FA;
+  color: #999;
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 12rpx 28rpx;
+  border-radius: 100rpx;
+}
+
+/* 评价区 */
+.review-section .section-title {
+  margin-bottom: 20rpx;
+}
+
+.review-member-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F5F7FA;
+}
+
+.review-member-item:last-child {
+  border-bottom: none;
+}
+
+.flex-1 {
+  flex: 1;
+  margin-left: 16rpx;
+}
+
+.review-btn {
+  background: linear-gradient(135deg, #FAAD14 0%, #F59E0B 100%);
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 12rpx 28rpx;
+  border-radius: 100rpx;
+}
+
+/* 申请按钮状态 */
+.join-disabled {
+  background: #E0E0E0 !important;
+  color: #999 !important;
+  box-shadow: none !important;
+}
+
+.join-pending {
+  background: #FFF3E0 !important;
+  color: #FF8C42 !important;
+  box-shadow: none !important;
+}
+
+.join-joined {
+  background: #E8F8F7 !important;
+  color: #12B7B5 !important;
+  box-shadow: none !important;
+}

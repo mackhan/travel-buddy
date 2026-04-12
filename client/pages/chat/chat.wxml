@@ -14,16 +14,31 @@
         <text>加载更早的消息</text>
       </view>
 
-      <!-- 时间戳分隔 -->
-      <block
-        wx:for="{{messages}}"
-        wx:key="_id"
-      >
+      <block wx:for="{{messages}}" wx:key="id">
+        <!-- 时间分隔 -->
         <view class="msg-time-divider" wx:if="{{item.showTime && item.displayTime}}">
           <text class="msg-time-text">{{item.displayTime}}</text>
         </view>
 
+        <!-- 系统消息：行程卡片（有 tripId） -->
+        <view wx:if="{{item.type === 'system' && item.tripId}}" class="system-card-wrap">
+          <view class="system-trip-card" bindtap="goTripDetail" data-trip-id="{{item.tripId}}">
+            <view class="system-card-icon">✈️</view>
+            <view class="system-card-body">
+              <view class="system-card-content">{{item.content}}</view>
+              <view class="system-card-link">查看行程详情 →</view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 系统消息：普通通知（无 tripId） -->
+        <view wx:elif="{{item.type === 'system'}}" class="system-notify-wrap">
+          <text class="system-notify-text">{{item.content}}</text>
+        </view>
+
+        <!-- 普通消息 -->
         <view
+          wx:else
           class="msg-item {{item.isMine ? 'msg-mine' : 'msg-other'}}"
           id="msg-{{item._id}}"
         >

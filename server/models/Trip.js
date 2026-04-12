@@ -17,6 +17,7 @@ const Trip = sequelize.define('Trip', {
   },
   description: { type: DataTypes.STRING(500), defaultValue: '' },
   maxMembers: { type: DataTypes.INTEGER, defaultValue: 0 },
+  currentMembers: { type: DataTypes.INTEGER, defaultValue: 1 },
   status: { type: DataTypes.ENUM('active', 'completed', 'cancelled'), defaultValue: 'active' }
 }, { tableName: 'trips', timestamps: true, underscored: true })
 

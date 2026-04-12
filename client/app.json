@@ -6,7 +6,8 @@
     "pages/profile/profile",
     "pages/detail/detail",
     "pages/chat/chat",
-    "pages/expense/expense"
+    "pages/expense/expense",
+    "pages/review/review"
   ],
   "window": {
     "navigationBarBackgroundColor": "#12B7B5",

@@ -9,6 +9,7 @@ const Message = sequelize.define('Message', {
   receiverId: { type: DataTypes.INTEGER, allowNull: false },
   content: { type: DataTypes.TEXT, allowNull: false },
   type: { type: DataTypes.ENUM('text', 'image', 'system'), defaultValue: 'text' },
+  tripId: { type: DataTypes.INTEGER, allowNull: true, defaultValue: null },
   read: { type: DataTypes.BOOLEAN, defaultValue: false }
 }, { tableName: 'messages', timestamps: true, underscored: true })
 

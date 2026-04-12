@@ -145,3 +145,65 @@
 .send-btn:active {
   transform: scale(0.95);
 }
+
+/* 系统消息：行程卡片 */
+.system-card-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16rpx 0;
+  margin-bottom: 16rpx;
+}
+
+.system-trip-card {
+  display: flex;
+  align-items: flex-start;
+  background: #FFFFFF;
+  border: 1rpx solid #E8F8F7;
+  border-radius: 20rpx;
+  padding: 24rpx 28rpx;
+  max-width: 80%;
+  box-shadow: 0 4rpx 20rpx rgba(18, 183, 181, 0.1);
+}
+
+.system-card-icon {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.system-card-body {
+  flex: 1;
+}
+
+.system-card-content {
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 12rpx;
+}
+
+.system-card-link {
+  font-size: 24rpx;
+  color: #12B7B5;
+  font-weight: 600;
+}
+
+/* 系统消息：纯文字通知 */
+.system-notify-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 12rpx 24rpx;
+  margin-bottom: 12rpx;
+}
+
+.system-notify-text {
+  font-size: 23rpx;
+  color: #AAAAAA;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 8rpx 24rpx;
+  border-radius: 20rpx;
+  text-align: center;
+  line-height: 1.6;
+  max-width: 85%;
+}

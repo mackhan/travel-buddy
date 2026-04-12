@@ -12,6 +12,9 @@ Page({
     days: 0,
     fullStars: [],
     emptyStars: [],
+    applicants: [],       // 待审批申请列表（仅行程主可见）
+    members: [],          // 已批准的成员列表
+    loadingApplicants: false,
     tagIcons: {
       '拼车': '🚗',
       '拼房': '🏨',
@@ -27,6 +30,14 @@ Page({
     }
   },
 
+  onShow() {
+    // 从评价页返回时刷新行程
+    if (this.data.trip) {
+      const id = this.data.trip.id || this.data.trip._id
+      if (id) this.loadTrip(id)
+    }
+  },
+
   async loadTrip(id) {
     try {
       const res = await get(`/trips/${id}`)
@@ -36,7 +47,6 @@ Page({
         return
       }
 
-      // 兼容 MySQL(trip.user) 和 MongoDB(trip.userId) 两种结构
       const author = trip.user || trip.userId || {}
       const app = getApp()
       const myId = app.globalData.userInfo && (app.globalData.userInfo.id || app.globalData.userInfo._id)
@@ -52,10 +62,17 @@ Page({
       const fullStars = new Array(starInfo.full).fill(true)
       const emptyStars = new Array(5 - starInfo.full).fill(true)
 
-      // 统一把作者信息挂到 trip.user
       trip.user = author
 
       this.setData({ trip, loading: false, isOwner, startDateText, endDateText, days, fullStars, emptyStars })
+
+      // 加载成员列表（所有人可见）
+      this.loadMembers(id)
+
+      // 行程主额外加载申请列表
+      if (isOwner) {
+        this.loadApplicants(id)
+      }
     } catch (e) {
       console.error('加载行程失败:', e)
       this.setData({ loading: false })
@@ -63,18 +80,90 @@ Page({
     }
   },
 
-  async joinTrip() {
+  async loadApplicants(id) {
+    this.setData({ loadingApplicants: true })
     try {
+      const res = await get(`/trips/${id}/applicants`)
+      this.setData({ applicants: res.data || [], loadingApplicants: false })
+    } catch (e) {
+      this.setData({ loadingApplicants: false })
+    }
+  },
+
+  async loadMembers(id) {
+    try {
+      const res = await get(`/trips/${id}/members`)
+      this.setData({ members: res.data || [] })
+    } catch (e) {
+      console.error('加载成员失败:', e)
+    }
+  },
+
+  async approveApplicant(e) {
+    const userId = e.currentTarget.dataset.userId
+    const nickname = e.currentTarget.dataset.nickname
+    try {
+      wx.showLoading({ title: '处理中...' })
       const id = this.data.trip.id || this.data.trip._id
+      await post(`/trips/${id}/approve/${userId}`)
+      wx.hideLoading()
+      wx.showToast({ title: `已同意 ${nickname} 的申请`, icon: 'success', duration: 2000 })
+      this.loadApplicants(id)
+      this.loadMembers(id)
+      // 刷新行程数据（currentMembers 更新）
+      setTimeout(() => this.loadTrip(id), 500)
+    } catch (e) {
+      wx.hideLoading()
+      wx.showToast({ title: e.message || '操作失败', icon: 'none' })
+    }
+  },
+
+  async rejectApplicant(e) {
+    const userId = e.currentTarget.dataset.userId
+    const nickname = e.currentTarget.dataset.nickname
+    const res = await new Promise(resolve => {
+      wx.showModal({ title: '确认拒绝', content: `确定拒绝 ${nickname} 的申请吗？`, success: resolve })
+    })
+    if (!res.confirm) return
+    try {
+      wx.showLoading({ title: '处理中...' })
+      const id = this.data.trip.id || this.data.trip._id
+      await post(`/trips/${id}/reject/${userId}`)
+      wx.hideLoading()
+      wx.showToast({ title: '已拒绝', icon: 'success' })
+      this.loadApplicants(id)
+    } catch (e) {
+      wx.hideLoading()
+      wx.showToast({ title: e.message || '操作失败', icon: 'none' })
+    }
+  },
+
+  async joinTrip() {
+    const trip = this.data.trip
+    const myMemberStatus = trip.myMemberStatus
+
+    // 已申请中，跳到聊天页
+    if (myMemberStatus === 'pending') {
+      wx.showToast({ title: '申请中，等待对方确认', icon: 'none' })
+      return
+    }
+    // 已加入
+    if (myMemberStatus === 'approved') {
+      wx.showToast({ title: '您已加入该行程', icon: 'none' })
+      return
+    }
+
+    try {
+      const id = trip.id || trip._id
       const res = await post(`/trips/${id}/join`)
       wx.showToast({ title: '申请已发送！', icon: 'success', duration: 1500 })
-      // 申请成功后跳到聊天页，直接和对方沟通
+      // 更新本地状态
+      this.setData({ 'trip.myMemberStatus': 'pending' })
       setTimeout(() => {
         const app = getApp()
         const myId = app.globalData.userInfo && (app.globalData.userInfo.id || app.globalData.userInfo._id)
         const author = this.data.trip.user || {}
         const otherId = author.id || author._id
-        const { getConversationId } = require('../../utils/util')
         const conversationId = getConversationId(myId, otherId)
         wx.navigateTo({
           url: `/pages/chat/chat?conversationId=${conversationId}&userId=${otherId}&nickname=${author.nickname}`
@@ -94,9 +183,27 @@ Page({
     })
   },
 
+  /** 跳到评价页，评价搭子 */
+  goReview(e) {
+    const { userId, nickname } = e.currentTarget.dataset
+    const tripId = this.data.trip.id || this.data.trip._id
+    wx.navigateTo({
+      url: `/pages/review/review?toUserId=${userId}&tripId=${tripId}&toNickname=${nickname}`
+    })
+  },
+
+  /** 行程完成后评价行程主 */
+  goReviewOwner() {
+    const trip = this.data.trip
+    const owner = trip.user || {}
+    const tripId = trip.id || trip._id
+    wx.navigateTo({
+      url: `/pages/review/review?toUserId=${owner.id || owner._id}&tripId=${tripId}&toNickname=${owner.nickname}`
+    })
+  },
+
   republishTrip() {
     const trip = this.data.trip
-    // 把当前行程数据传给发布页，让用户修改日期后重新发布
     const params = encodeURIComponent(JSON.stringify({
       destination: trip.destination,
       title: trip.title || '',
@@ -114,6 +221,11 @@ Page({
     wx.navigateTo({ url: `/pages/profile/profile?userId=${id}` })
   },
 
+  viewMemberProfile(e) {
+    const userId = e.currentTarget.dataset.userId
+    wx.navigateTo({ url: `/pages/profile/profile?userId=${userId}` })
+  },
+
   async cancelTrip() {
     const res = await new Promise(resolve => {
       wx.showModal({ title: '确认取消', content: '确定要取消这个行程吗？', success: resolve })
@@ -128,11 +240,17 @@ Page({
   },
 
   async completeTrip() {
+    const res = await new Promise(resolve => {
+      wx.showModal({ title: '确认完成', content: '标记行程完成后，您和搭子们可以互相评价，确认完成吗？', success: resolve })
+    })
+    if (!res.confirm) return
     try {
       const id = this.data.trip.id || this.data.trip._id
       await put(`/trips/${id}`, { status: 'completed' })
       wx.showToast({ title: '行程已完成 🎉', icon: 'success', duration: 2000 })
-      setTimeout(() => wx.navigateBack(), 2000)
+      setTimeout(() => this.loadTrip(id), 2000)
     } catch (e) { wx.showToast({ title: '操作失败', icon: 'none' }) }
-  }
+  },
+
+  stopPropagation() {}
 })

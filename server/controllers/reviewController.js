@@ -1,27 +1,55 @@
 // controllers/reviewController.js
+const { Op } = require('sequelize')
+const sequelize = require('../db')
 const Review = require('../models/Review')
 const User = require('../models/User')
 const Trip = require('../models/Trip')
+const TripMember = require('../models/TripMember')
 const { success, fail, parsePagination } = require('../utils/helpers')
 
 exports.create = async (req, res) => {
   try {
     const { toUserId, tripId, score, content } = req.body
     if (!toUserId || !tripId || !score) return fail(res, '请填写完整的评价信息')
-    if (toUserId === req.userId) return fail(res, '不能评价自己')
+    if (parseInt(toUserId) === req.userId) return fail(res, '不能评价自己')
     if (score < 1 || score > 5) return fail(res, '评分范围为 1-5 分')
+
+    // 校验行程状态
+    const trip = await Trip.findByPk(tripId)
+    if (!trip) return fail(res, '行程不存在', 404)
+    if (trip.status !== 'completed') return fail(res, '行程未完成，暂不开放评价')
+
+    // 校验评价发起人资格：必须是行程发布者，或已 approved 的成员
+    const isRequesterOwner = trip.userId === req.userId
+    if (!isRequesterOwner) {
+      const requesterMember = await TripMember.findOne({
+        where: { tripId, userId: req.userId, status: 'approved' }
+      })
+      if (!requesterMember) return fail(res, '您未参与该行程，无法评价', 403)
+    }
+
+    // 校验被评价人资格：必须是行程发布者，或已 approved 的成员
+    const isTargetOwner = trip.userId === parseInt(toUserId)
+    if (!isTargetOwner) {
+      const targetMember = await TripMember.findOne({
+        where: { tripId, userId: toUserId, status: 'approved' }
+      })
+      if (!targetMember) return fail(res, '被评价人未参与该行程', 403)
+    }
 
     const exists = await Review.findOne({ where: { fromUserId: req.userId, toUserId, tripId } })
     if (exists) return fail(res, '您已评价过该行程的搭子')
 
-    const review = await Review.create({ fromUserId: req.userId, toUserId, tripId, score, content: content || '' })
+    const review = await Review.create({ fromUserId: req.userId, toUserId, tripId, score: parseFloat(score), content: content || '' })
 
-    const targetUser = await User.findByPk(toUserId)
-    if (targetUser) {
-      const total = targetUser.creditScore * targetUser.reviewCount + score
-      const newCount = targetUser.reviewCount + 1
-      await targetUser.update({ reviewCount: newCount, creditScore: Math.round((total / newCount) * 10) / 10 })
-    }
+    // 原子 SQL 更新信用分，防止竞态条件
+    await sequelize.query(
+      `UPDATE users SET
+        review_count = review_count + 1,
+        credit_score = ROUND((credit_score * review_count + :score) / (review_count + 1), 1)
+       WHERE id = :id`,
+      { replacements: { score: parseFloat(score), id: toUserId } }
+    )
 
     success(res, review, '评价成功')
   } catch (err) {

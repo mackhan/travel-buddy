@@ -17,6 +17,7 @@
       <view class="member-row" wx:if="{{trip.maxMembers > 0}}">
         <text class="member-icon">👥</text>
         <text class="member-text">{{trip.currentMembers || 1}} / {{trip.maxMembers}} 人</text>
+        <view class="full-badge" wx:if="{{trip.maxMembers > 0 && trip.currentMembers >= trip.maxMembers}}">已满员</view>
       </view>
     </view>
   </view>
@@ -51,9 +52,96 @@
     <view class="desc-content">{{trip.description}}</view>
   </view>
 
-  <!-- 底部操作 -->
+  <!-- 已加入的成员列表 -->
+  <view class="section members-section" wx:if="{{members.length > 0}}">
+    <view class="section-title">同行搭子（{{members.length}}人）</view>
+    <view class="members-list">
+      <view
+        class="member-item"
+        wx:for="{{members}}"
+        wx:key="id"
+        bindtap="viewMemberProfile"
+        data-user-id="{{item.user.id}}"
+      >
+        <image class="member-avatar" src="{{item.user.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+        <view class="member-name">{{item.user.nickname}}</view>
+        <!-- 行程完成后，非行程主且是已加入成员，可以评价行程主 -->
+        <view
+          class="review-btn-small"
+          wx:if="{{trip.status === 'completed' && !isOwner}}"
+          catchtap="goReviewOwner"
+        >评价</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待审批申请列表（仅行程主可见） -->
+  <view class="section applicants-section" wx:if="{{isOwner && applicants.length > 0}}">
+    <view class="section-title">申请同行（{{applicants.length}}人待确认）</view>
+    <view class="applicant-item" wx:for="{{applicants}}" wx:key="id">
+      <image
+        class="applicant-avatar"
+        src="{{item.user.avatar || '/assets/default-avatar.png'}}"
+        mode="aspectFill"
+        bindtap="viewMemberProfile"
+        data-user-id="{{item.user.id}}"
+      />
+      <view class="applicant-info">
+        <view class="applicant-name">{{item.user.nickname}}</view>
+        <view class="applicant-score">
+          <text class="star-on">★</text>
+          <text class="score-num">{{item.user.creditScore || '5.0'}}</text>
+          <text class="score-cnt">（{{item.user.reviewCount || 0}}条评价）</text>
+        </view>
+      </view>
+      <view class="applicant-actions">
+        <view
+          class="action-approve"
+          catchtap="approveApplicant"
+          data-user-id="{{item.user.id}}"
+          data-nickname="{{item.user.nickname}}"
+        >同意</view>
+        <view
+          class="action-reject"
+          catchtap="rejectApplicant"
+          data-user-id="{{item.user.id}}"
+          data-nickname="{{item.user.nickname}}"
+        >拒绝</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 行程完成后：行程主评价搭子们 -->
+  <view class="section review-section" wx:if="{{isOwner && trip.status === 'completed' && members.length > 0}}">
+    <view class="section-title">去评价你的搭子们</view>
+    <view class="review-member-item" wx:for="{{members}}" wx:key="id">
+      <image class="member-avatar" src="{{item.user.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+      <view class="member-name flex-1">{{item.user.nickname}}</view>
+      <view
+        class="review-btn"
+        catchtap="goReview"
+        data-user-id="{{item.user.id}}"
+        data-nickname="{{item.user.nickname}}"
+      >写评价 ★</view>
+    </view>
+  </view>
+
+  <!-- 底部操作：非行程主 -->
   <view class="action-bar safe-bottom" wx:if="{{!isOwner && trip.status === 'active'}}">
-    <view class="action-btn join-btn" bindtap="joinTrip">
+    <!-- 已满员 -->
+    <view class="action-btn join-btn join-disabled" wx:if="{{trip.maxMembers > 0 && trip.currentMembers >= trip.maxMembers}}">
+      <text>😅 行程已满员</text>
+    </view>
+    <!-- 待审批 -->
+    <view class="action-btn join-btn join-pending" wx:elif="{{trip.myMemberStatus === 'pending'}}">
+      <text>⏳ 申请中...</text>
+    </view>
+    <!-- 已加入 -->
+    <view class="action-btn join-btn join-joined" wx:elif="{{trip.myMemberStatus === 'approved'}}">
+      <text>✅ 已加入</text>
+    </view>
+    <!-- 可以申请 -->
+    <view class="action-btn join-btn" wx:else bindtap="joinTrip">
       <text>🙋 申请同行</text>
     </view>
     <view class="action-btn chat-btn" bindtap="startChat">
@@ -61,7 +149,7 @@
     </view>
   </view>
 
-  <!-- 自己的行程管理 -->
+  <!-- 底部操作：自己的行程 -->
   <view class="action-bar safe-bottom" wx:if="{{isOwner}}">
     <view class="action-btn cancel-btn" bindtap="cancelTrip" wx:if="{{trip.status === 'active'}}">
       <text>取消行程</text>

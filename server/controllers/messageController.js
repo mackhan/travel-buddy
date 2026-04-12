@@ -3,6 +3,7 @@ const { Op, fn, col, literal } = require('sequelize')
 const sequelize = require('../db')
 const Message = require('../models/Message')
 const User = require('../models/User')
+const Trip = require('../models/Trip')
 const { success, fail, parsePagination } = require('../utils/helpers')
 
 exports.getConversations = async (req, res) => {
@@ -43,7 +44,10 @@ exports.getMessages = async (req, res) => {
       where: { conversationId },
       order: [['createdAt', 'DESC']],
       offset: skip, limit,
-      include: [{ model: User, as: 'sender', attributes: ['id', 'nickname', 'avatar'] }]
+      include: [
+        { model: User, as: 'sender', attributes: ['id', 'nickname', 'avatar'] },
+        { model: Trip, as: 'trip', attributes: ['id', 'destination', 'startDate', 'endDate'], required: false }
+      ]
     })
 
     await Message.update({ read: true }, { where: { conversationId, receiverId: req.userId, read: false } })
