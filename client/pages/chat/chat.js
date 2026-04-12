@@ -134,12 +134,25 @@ Page({
       }, 3000)
     }
     socket.on('chat:typing', this.onTyping)
+
+    // 监听行程状态变更通知（completed/cancelled/member_left）
+    this.onTripNotify = (data) => {
+      const titleMap = {
+        completed: '行程已完成，快去评价吧！',
+        cancelled: '行程已被取消',
+        member_left: data.message || '有成员退出了行程'
+      }
+      const title = titleMap[data.status || data.event] || data.message || '行程状态已更新'
+      wx.showToast({ title, icon: 'none', duration: 3000 })
+    }
+    socket.on('trip:notify', this.onTripNotify)
   },
 
   onUnload() {
     socket.off('chat:receive', this.onReceiveMessage)
     socket.off('chat:sent', this.onSentConfirm)
     socket.off('chat:typing', this.onTyping)
+    socket.off('trip:notify', this.onTripNotify)
     clearTimeout(this.typingTimer)
   },
 

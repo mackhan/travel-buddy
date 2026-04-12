@@ -417,8 +417,30 @@
   border-radius: 100rpx;
 }
 
-/* 申请按钮状态 */
-.join-disabled {
+/* 退出行程按钮（小，在成员列表内） */
+.leave-btn-small {
+  font-size: 20rpx;
+  color: #FF6B6B;
+  border: 1rpx solid #FF6B6B;
+  padding: 4rpx 12rpx;
+  border-radius: 100rpx;
+  margin-top: 6rpx;
+}
+
+/* 底部退出行程按钮 */
+.leave-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF1F1;
+  color: #FF6B6B;
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 28rpx 0;
+  border-radius: 100rpx;
+  margin-left: 16rpx;
+}
   background: #E0E0E0 !important;
   color: #999 !important;
   box-shadow: none !important;
@@ -433,5 +455,11 @@
 .join-joined {
   background: #E8F8F7 !important;
   color: #12B7B5 !important;
+  box-shadow: none !important;
+}
+
+.join-left {
+  background: #F3F0FF !important;
+  color: #7C5CBF !important;
   box-shadow: none !important;
 }

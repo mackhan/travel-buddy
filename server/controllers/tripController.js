@@ -5,6 +5,7 @@ const Trip = require('../models/Trip')
 const User = require('../models/User')
 const TripMember = require('../models/TripMember')
 const Message = require('../models/Message')
+const { sendToUsers, sendToUser } = require('../services/socketService')
 const { success, fail, parsePagination } = require('../utils/helpers')
 
 const userAttrs = ['id', 'nickname', 'avatar', 'creditScore']
@@ -92,9 +93,12 @@ exports.getMine = async (req, res) => {
 }
 
 exports.update = async (req, res) => {
+  const t = await sequelize.transaction()
+  let committed = false
   try {
-    const trip = await Trip.findOne({ where: { id: req.params.id, userId: req.userId } })
-    if (!trip) return fail(res, '行程不存在或无权操作', 404)
+    const trip = await Trip.findOne({ where: { id: req.params.id, userId: req.userId }, transaction: t })
+    if (!trip) { await t.rollback(); return fail(res, '行程不存在或无权操作', 404) }
+
     const allowed = ['destination', 'startDate', 'endDate', 'tags', 'description', 'status', 'maxMembers']
     const updates = {}
     allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f] })
@@ -103,13 +107,57 @@ exports.update = async (req, res) => {
     if (updates.status) {
       const validTransitions = { active: ['completed', 'cancelled'], completed: [], cancelled: [] }
       if (!validTransitions[trip.status]?.includes(updates.status)) {
+        await t.rollback()
         return fail(res, `行程状态不能从 ${trip.status} 变更为 ${updates.status}`)
       }
     }
 
-    await trip.update(updates)
+    await trip.update(updates, { transaction: t })
+
+    let memberUserIds = []
+    let notifyContent = ''
+
+    // 状态变更为 completed/cancelled 时，给所有 approved 成员发通知（排除行程主自己）
+    if (updates.status === 'completed' || updates.status === 'cancelled') {
+      const contentMap = {
+        completed: `【行程完成】你参与的行程「${trip.destination}」已标记完成，快去互相评价一下吧！`,
+        cancelled: `【行程取消】很遗憾，你参与的行程「${trip.destination}」已被取消。`
+      }
+      notifyContent = contentMap[updates.status]
+
+      const approvedMembers = await TripMember.findAll({
+        where: { tripId: trip.id, status: 'approved', userId: { [Op.ne]: trip.userId } },
+        transaction: t
+      })
+
+      memberUserIds = approvedMembers.map(m => m.userId)
+      for (const memberId of memberUserIds) {
+        const conversationId = [trip.userId, memberId].sort().join('_')
+        await Message.create({
+          conversationId, senderId: trip.userId, receiverId: memberId,
+          content: notifyContent, type: 'system', tripId: trip.id
+        }, { transaction: t })
+      }
+    }
+
+    // 统一在所有 DB 操作完成后提交事务
+    await t.commit()
+    committed = true
+
+    // WS 推送在事务提交后执行，异常不影响已提交的数据
+    if (memberUserIds.length > 0) {
+      sendToUsers(memberUserIds, 'trip:notify', {
+        tripId: trip.id, status: updates.status,
+        destination: trip.destination, message: notifyContent
+      })
+    }
+
     success(res, trip, '行程已更新')
-  } catch (err) { fail(res, '更新失败', 500) }
+  } catch (err) {
+    if (!committed) await t.rollback()
+    console.error('更新行程失败:', err)
+    fail(res, '更新失败', 500)
+  }
 }
 
 /** 申请加入行程 */
@@ -134,7 +182,7 @@ exports.join = async (req, res) => {
     if (existing) {
       if (existing.status === 'approved') return fail(res, '您已加入该行程')
       if (existing.status === 'pending') return fail(res, '您已申请该行程，请等待对方确认')
-      // rejected 状态可重新申请
+      // rejected / left 状态可重新申请
       await existing.update({ status: 'pending' })
     } else {
       await TripMember.create({ tripId: trip.id, userId: req.userId, status: 'pending' })
@@ -264,6 +312,58 @@ exports.getMembers = async (req, res) => {
     })
     success(res, members)
   } catch (err) { fail(res, '获取成员列表失败', 500) }
+}
+
+/** 成员主动退出行程 */
+exports.leave = async (req, res) => {
+  // I2: 预先查用户信息，不占用写事务时间
+  const leaver = await User.findByPk(req.userId, { attributes: ['id', 'nickname'] })
+
+  const t = await sequelize.transaction()
+  let committed = false
+  try {
+    const trip = await Trip.findByPk(req.params.id, { transaction: t, lock: true })
+    if (!trip) { await t.rollback(); return fail(res, '行程不存在', 404) }
+    if (trip.userId === req.userId) { await t.rollback(); return fail(res, '行程发起人不能退出自己的行程') }
+    if (trip.status !== 'active') { await t.rollback(); return fail(res, '行程已结束，无法退出') }
+
+    const member = await TripMember.findOne({
+      where: { tripId: trip.id, userId: req.userId, status: 'approved' },
+      transaction: t, lock: true
+    })
+    if (!member) { await t.rollback(); return fail(res, '您不在该行程中', 404) }
+
+    // C3：decrement 前保护，防止计数下溢
+    if (trip.currentMembers <= 1) { await t.rollback(); return fail(res, '计数异常，请联系管理员', 500) }
+
+    await member.update({ status: 'left' }, { transaction: t })
+    await trip.decrement('currentMembers', { by: 1, transaction: t })
+
+    const nickname = leaver ? leaver.nickname : '旅行者'
+    const conversationId = [trip.userId, req.userId].sort().join('_')
+    await Message.create({
+      conversationId, senderId: req.userId, receiverId: trip.userId,
+      content: `【成员退出】${nickname} 已退出行程「${trip.destination}」。`,
+      type: 'system', tripId: trip.id
+    }, { transaction: t })
+
+    await t.commit()
+    committed = true
+
+    // WS 实时推送给行程主
+    sendToUser(trip.userId, 'trip:notify', {
+      tripId: trip.id, event: 'member_left',
+      userId: req.userId, nickname,
+      destination: trip.destination,
+      message: `${nickname} 退出了行程「${trip.destination}」`
+    })
+
+    success(res, { left: true }, '已退出行程')
+  } catch (err) {
+    if (!committed) await t.rollback()
+    console.error('退出行程失败:', err)
+    fail(res, '退出失败', 500)
+  }
 }
 
 exports.remove = async (req, res) => {

@@ -6,7 +6,7 @@ const TripMember = sequelize.define('TripMember', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   tripId: { type: DataTypes.INTEGER, allowNull: false },
   userId: { type: DataTypes.INTEGER, allowNull: false },
-  status: { type: DataTypes.ENUM('pending', 'approved', 'rejected'), defaultValue: 'pending' }
+  status: { type: DataTypes.ENUM('pending', 'approved', 'rejected', 'left'), defaultValue: 'pending' }
 }, { tableName: 'trip_members', timestamps: true, underscored: true,
   indexes: [{ unique: true, fields: ['trip_id', 'user_id'] }]
 })

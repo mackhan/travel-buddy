@@ -1,5 +1,5 @@
 // pages/detail/detail.js
-const { get, put, post } = require('../../utils/request')
+const { get, put, post, del } = require('../../utils/request')
 const { formatDate, getStars, getConversationId } = require('../../utils/util')
 
 Page({
@@ -7,6 +7,7 @@ Page({
     trip: null,
     loading: true,
     isOwner: false,
+    myId: null,
     startDateText: '',
     endDateText: '',
     days: 0,
@@ -64,7 +65,7 @@ Page({
 
       trip.user = author
 
-      this.setData({ trip, loading: false, isOwner, startDateText, endDateText, days, fullStars, emptyStars })
+      this.setData({ trip, loading: false, isOwner, myId, startDateText, endDateText, days, fullStars, emptyStars })
 
       // 加载成员列表（所有人可见）
       this.loadMembers(id)
@@ -224,6 +225,24 @@ Page({
   viewMemberProfile(e) {
     const userId = e.currentTarget.dataset.userId
     wx.navigateTo({ url: `/pages/profile/profile?userId=${userId}` })
+  },
+
+  async leaveTrip() {
+    const res = await new Promise(resolve => {
+      wx.showModal({ title: '退出行程', content: '确定要退出这个行程吗？退出后行程主将收到通知。', success: resolve })
+    })
+    if (!res.confirm) return
+    try {
+      wx.showLoading({ title: '退出中...' })
+      const id = this.data.trip.id || this.data.trip._id
+      await del(`/trips/${id}/leave`)
+      wx.hideLoading()
+      wx.showToast({ title: '已退出行程', icon: 'success', duration: 2000 })
+      setTimeout(() => this.loadTrip(id), 2000)
+    } catch (e) {
+      wx.hideLoading()
+      wx.showToast({ title: e.message || '退出失败', icon: 'none' })
+    }
   },
 
   async cancelTrip() {

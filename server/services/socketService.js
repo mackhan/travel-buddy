@@ -130,4 +130,18 @@ function isUserOnline(userId) {
   return onlineUsers.has(userId) && onlineUsers.get(userId).size > 0
 }
 
-module.exports = { initSocket, isUserOnline }
+/**
+ * 批量推送 WebSocket 通知给多个用户
+ * @param {number[]} userIds - 接收者 ID 数组
+ * @param {string} type - 消息类型
+ * @param {object} payload - 消息内容
+ */
+function sendToUsers(userIds, type, payload) {
+  const data = JSON.stringify({ type, payload })
+  userIds.forEach(id => {
+    const sockets = onlineUsers.get(parseInt(id))
+    if (sockets) sockets.forEach(ws => { if (ws.readyState === 1) ws.send(data) })
+  })
+}
+
+module.exports = { initSocket, isUserOnline, sendToUser, sendToUsers }

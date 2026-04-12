@@ -8,6 +8,9 @@
  * - 用户资料（查看自己/他人/更新）
  * - 行程（热门/搜索/我的/详情/创建/更新状态/加入/删除）
  * - 申请审批流（申请/防重复/同意/拒绝/查看申请列表/查看成员）
+ * - 退出行程（leave：行程主禁止/行程已结束禁止）
+ * - 行程状态变更通知（completed/cancelled群发参与者）
+ * - 状态机倒流防护（completed→active拦截）
  * - 消息（对话列表/历史消息/未读数）
  * - 费用分摊（创建/列表/详情）
  * - 评价（创建/查看/资格校验）
@@ -61,7 +64,7 @@ const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
 const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
 
 async function run() {
-  console.log('\n🧪 旅行搭子 完整接口测试 v1.0.28\n' + '━'.repeat(55))
+  console.log('\n🧪 旅行搭子 完整接口测试 v1.0.29\n' + '━'.repeat(55))
 
   // ===== 1. 基础连接 =====
   console.log('\n[ 基础连接 ]')
@@ -240,10 +243,28 @@ async function run() {
       assert([200, 404].includes(r.status), `非预期status=${r.status}`)
     })
 
-    await test('PUT /api/trips/:id 标记完成 → 200', async () => {
+    await test('PUT /api/trips/:id 标记完成 → 200（含群通知逻辑）', async () => {
       const r = await request(`/api/trips/${createdTripId}`, 'PUT', { status: 'completed' }, TEST_TOKEN)
       assert(r.status === 200, `status=${r.status}`)
       assert(r.data.data.status === 'completed', '状态未更新为completed')
+    })
+
+    await test('PUT /api/trips/:id 状态倒流 completed→active → 400', async () => {
+      const r = await request(`/api/trips/${createdTripId}`, 'PUT', { status: 'active' }, TEST_TOKEN)
+      assert(r.status === 400, `预期400，实际${r.status}`)
+    })
+
+    await test('DELETE /api/trips/:id/leave 行程主退出自己行程 → 400', async () => {
+      const r = await request(`/api/trips/${createdTripId}/leave`, 'DELETE', null, TEST_TOKEN)
+      assert(r.status === 400, `预期400（行程主不能退出），实际${r.status}`)
+    })
+
+    await test('DELETE /api/trips/:id/leave 行程已完成，他人退出 → 400', async () => {
+      const OTHER_TOKEN_LEAVE = jwt.sign({ userId: 999997 }, JWT_SECRET, { expiresIn: '1h' })
+      const r = await request(`/api/trips/${createdTripId}/leave`, 'DELETE', null, OTHER_TOKEN_LEAVE)
+      // 行程已 completed，应返回 400（行程已结束）或 404（不在行程中）
+      assert([400, 404].includes(r.status), `预期40x，实际${r.status}: ${r.data.message}`)
+      console.log(`     → ${r.status}: ${r.data.message}`)
     })
 
     // 评价资格校验（行程完成后）
