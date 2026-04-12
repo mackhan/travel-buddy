@@ -1,65 +1,46 @@
-// services/socketService.js - 原生 WebSocket 聊天服务
-// 使用 ws 库替代 Socket.io，与微信小程序 wx.connectSocket 完全兼容
+// services/socketService.js - WebSocket 聊天服务（MySQL 版本）
 const { WebSocketServer } = require('ws')
 const url = require('url')
 const jwt = require('jsonwebtoken')
 const config = require('../config')
 const Message = require('../models/Message')
+const User = require('../models/User')
 
-// 在线用户映射 userId -> Set<ws>（支持多连接）
+// 在线用户映射 userId -> Set<ws>
 const onlineUsers = new Map()
 
 function initSocket(server) {
   const wss = new WebSocketServer({ server, path: '/ws' })
 
   wss.on('connection', (ws, req) => {
-    // 从 URL query 参数获取 token 鉴权
     const query = url.parse(req.url, true).query
     const token = query.token
-    if (!token) {
-      ws.close(4001, '未提供登录凭证')
-      return
-    }
+    if (!token) { ws.close(4001, '未提供登录凭证'); return }
 
     let userId
     try {
       const decoded = jwt.verify(token, config.jwtSecret)
       userId = decoded.userId
     } catch (err) {
-      ws.close(4002, '登录凭证无效')
-      return
+      ws.close(4002, '登录凭证无效'); return
     }
 
     ws.userId = userId
     console.log(`用户上线: ${userId}`)
 
-    // 记录在线状态
-    if (!onlineUsers.has(userId)) {
-      onlineUsers.set(userId, new Set())
-    }
+    if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set())
     onlineUsers.get(userId).add(ws)
 
-    // 发送连接成功确认
     sendToSocket(ws, 'connected', { userId })
 
-    // ====== 消息处理 ======
     ws.on('message', async (rawData) => {
       try {
-        const msg = JSON.parse(rawData.toString())
-        const { type, payload } = msg
-
+        const { type, payload } = JSON.parse(rawData.toString())
         switch (type) {
-          case 'chat:send':
-            await handleChatSend(ws, userId, payload)
-            break
-          case 'chat:read':
-            await handleChatRead(userId, payload)
-            break
-          case 'chat:typing':
-            handleChatTyping(userId, payload)
-            break
-          default:
-            console.warn('未知消息类型:', type)
+          case 'chat:send': await handleChatSend(ws, userId, payload); break
+          case 'chat:read': await handleChatRead(userId, payload); break
+          case 'chat:typing': handleChatTyping(userId, payload); break
+          default: console.warn('未知消息类型:', type)
         }
       } catch (err) {
         console.error('消息处理失败:', err)
@@ -67,21 +48,16 @@ function initSocket(server) {
       }
     })
 
-    // ====== 断开连接 ======
     ws.on('close', () => {
       console.log(`用户下线: ${userId}`)
       const sockets = onlineUsers.get(userId)
       if (sockets) {
         sockets.delete(ws)
-        if (sockets.size === 0) {
-          onlineUsers.delete(userId)
-        }
+        if (sockets.size === 0) onlineUsers.delete(userId)
       }
     })
 
-    ws.on('error', (err) => {
-      console.error(`WebSocket 错误 [${userId}]:`, err.message)
-    })
+    ws.on('error', (err) => console.error(`WebSocket 错误 [${userId}]:`, err.message))
   })
 
   return wss
@@ -92,44 +68,43 @@ async function handleChatSend(ws, userId, payload) {
   const { receiverId, content, type = 'text' } = payload || {}
   if (!receiverId || !content) return
 
-  // 生成会话 ID
   const conversationId = [userId, receiverId].sort().join('_')
 
-  // 保存消息到数据库
+  // 保存消息（MySQL + Sequelize）
   const message = await Message.create({
     conversationId,
     senderId: userId,
-    receiverId,
+    receiverId: parseInt(receiverId),
     content,
     type
   })
 
-  const populatedMsg = await Message.findById(message._id)
-    .populate('senderId', 'nickname avatar')
-    .lean()
+  // 关联查询发送者信息
+  const populatedMsg = await Message.findByPk(message.id, {
+    include: [{ model: User, as: 'sender', attributes: ['id', 'nickname', 'avatar'] }]
+  })
+
+  const msgData = populatedMsg ? populatedMsg.toJSON() : message.toJSON()
 
   // 发给接收者
-  sendToUser(receiverId, 'chat:receive', populatedMsg)
-
+  sendToUser(receiverId, 'chat:receive', msgData)
   // 确认发送成功（回给发送者）
-  sendToSocket(ws, 'chat:sent', populatedMsg)
+  sendToSocket(ws, 'chat:sent', msgData)
 }
 
-// ====== 标记已读 ======
+// ====== 标记已读（MySQL 版本）======
 async function handleChatRead(userId, payload) {
   const { conversationId } = payload || {}
   if (!conversationId) return
 
-  await Message.updateMany(
-    { conversationId, receiverId: userId, read: false },
-    { $set: { read: true } }
+  await Message.update(
+    { read: true },
+    { where: { conversationId, receiverId: userId, read: false } }
   )
 
   // 通知对方消息已读
-  const otherUserId = conversationId.split('_').find(id => id !== userId)
-  if (otherUserId) {
-    sendToUser(otherUserId, 'chat:readConfirm', { conversationId })
-  }
+  const otherUserId = conversationId.split('_').find(id => String(id) !== String(userId))
+  if (otherUserId) sendToUser(otherUserId, 'chat:readConfirm', { conversationId })
 }
 
 // ====== 正在输入 ======
@@ -139,25 +114,15 @@ function handleChatTyping(userId, payload) {
   sendToUser(receiverId, 'chat:typing', { userId })
 }
 
-// ====== 工具函数 ======
-
-/** 向单个 WebSocket 连接发送消息 */
 function sendToSocket(ws, type, payload) {
-  if (ws.readyState === 1) { // WebSocket.OPEN
-    ws.send(JSON.stringify({ type, payload }))
-  }
+  if (ws.readyState === 1) ws.send(JSON.stringify({ type, payload }))
 }
 
-/** 向某用户的所有连接发送消息 */
 function sendToUser(userId, type, payload) {
-  const sockets = onlineUsers.get(userId)
+  const sockets = onlineUsers.get(parseInt(userId))
   if (sockets) {
     const data = JSON.stringify({ type, payload })
-    sockets.forEach(ws => {
-      if (ws.readyState === 1) {
-        ws.send(data)
-      }
-    })
+    sockets.forEach(ws => { if (ws.readyState === 1) ws.send(data) })
   }
 }
 

@@ -66,10 +66,21 @@ Page({
   async joinTrip() {
     try {
       const id = this.data.trip.id || this.data.trip._id
-      await post(`/trips/${id}/join`)
-      wx.showToast({ title: '已申请同行', icon: 'success' })
-      this.loadTrip(id)
-    } catch (e) { wx.showToast({ title: '申请失败', icon: 'none' }) }
+      const res = await post(`/trips/${id}/join`)
+      wx.showToast({ title: '申请已发送！', icon: 'success', duration: 1500 })
+      // 申请成功后跳到聊天页，直接和对方沟通
+      setTimeout(() => {
+        const app = getApp()
+        const myId = app.globalData.userInfo && (app.globalData.userInfo.id || app.globalData.userInfo._id)
+        const author = this.data.trip.user || {}
+        const otherId = author.id || author._id
+        const { getConversationId } = require('../../utils/util')
+        const conversationId = getConversationId(myId, otherId)
+        wx.navigateTo({
+          url: `/pages/chat/chat?conversationId=${conversationId}&userId=${otherId}&nickname=${author.nickname}`
+        })
+      }, 1500)
+    } catch (e) { wx.showToast({ title: e.message || '申请失败', icon: 'none' }) }
   },
 
   startChat() {
@@ -95,6 +106,8 @@ Page({
     }))
     wx.navigateTo({ url: `/pages/publish/publish?prefill=${params}` })
   },
+
+  viewProfile() {
     const author = this.data.trip && this.data.trip.user
     if (!author) return
     const id = author.id || author._id

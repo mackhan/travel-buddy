@@ -91,6 +91,18 @@ Page({
     }
   },
 
+  startChat() {
+    const app = getApp()
+    const myId = app.globalData.userInfo && (app.globalData.userInfo.id || app.globalData.userInfo._id)
+    const otherId = this.data.userInfo.id || this.data.userInfo._id
+    if (!otherId) return
+    const { getConversationId } = require('../../utils/util')
+    const conversationId = getConversationId(myId, otherId)
+    wx.navigateTo({
+      url: `/pages/chat/chat?conversationId=${conversationId}&userId=${otherId}&nickname=${this.data.userInfo.nickname}`
+    })
+  },
+
   showCreditInfo() {
     wx.showModal({
       title: '信誉分说明',
@@ -267,7 +279,7 @@ Page({
   showAbout() {
     wx.showModal({
       title: '旅行搭子',
-      content: '版本 1.0.22\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
+      content: '版本 1.0.25\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
       showCancel: false
     })
   }

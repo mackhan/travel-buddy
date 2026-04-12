@@ -92,32 +92,29 @@ Page({
     // 连接 WebSocket
     socket.connect()
 
-    // 监听收到的新消息（来自对方）
+    // 监听收到的新消息
     this.onReceiveMessage = (msg) => {
       if (msg.conversationId === this.data.conversationId) {
         const myId = getMyId()
-        const senderId = msg.senderId._id || msg.senderId
-        // 如果是自己发的消息（通过 chat:sent 已处理），跳过
-        if (senderId === myId) return
+        const sender = msg.sender || msg.senderId || {}
+        const senderId = sender.id || sender._id || msg.senderId
+        if (String(senderId) === String(myId)) return
 
-        const messages = markTimeFlags([...this.data.messages, {
-          ...msg,
-          isMine: false
-        }])
+        // 更新对方头像
+        if (sender.avatar) this.setData({ otherAvatar: sender.avatar })
+
+        const messages = markTimeFlags([...this.data.messages, { ...msg, sender, isMine: false }])
         this.setData({ messages })
         this.scrollToBottom()
-
-        // 标记已读
         socket.send('chat:read', { conversationId: this.data.conversationId })
       }
     }
     socket.on('chat:receive', this.onReceiveMessage)
 
-    // 监听发送确认 — 用服务端返回的真实消息替换本地临时消息
+    // 监听发送确认
     this.onSentConfirm = (msg) => {
       if (msg.conversationId === this.data.conversationId) {
         const messages = markTimeFlags(this.data.messages.map(m => {
-          // 找到临时消息（_id 以 temp_ 开头，内容匹配），替换为真实消息
           if (m._id && String(m._id).startsWith('temp_') && m.content === msg.content) {
             return { ...msg, isMine: true }
           }
@@ -155,17 +152,21 @@ Page({
       const data = res.data || {}
       const myId = getMyId()
 
-      const messages = (data.list || []).map(msg => ({
-        ...msg,
-        isMine: (msg.senderId._id || msg.senderId) === myId
-      }))
+      const messages = (data.list || []).map(msg => {
+        // 兼容 MySQL(msg.sender) 和 MongoDB(msg.senderId)
+        const sender = msg.sender || msg.senderId || {}
+        const senderId = sender.id || sender._id || msg.senderId
+        return {
+          ...msg,
+          sender,
+          isMine: String(senderId) === String(myId)
+        }
+      })
 
       // 获取对方头像
-      if (messages.length > 0) {
-        const otherMsg = messages.find(m => !m.isMine)
-        if (otherMsg && otherMsg.senderId && otherMsg.senderId.avatar) {
-          this.setData({ otherAvatar: otherMsg.senderId.avatar })
-        }
+      const otherMsg = messages.find(m => !m.isMine)
+      if (otherMsg && otherMsg.sender && otherMsg.sender.avatar) {
+        this.setData({ otherAvatar: otherMsg.sender.avatar })
       }
 
       const merged = this.data.page === 1 ? messages : [...messages, ...this.data.messages]
@@ -174,9 +175,7 @@ Page({
         hasMore: data.pagination ? data.pagination.page < data.pagination.totalPages : false
       })
 
-      if (this.data.page === 1) {
-        this.scrollToBottom()
-      }
+      if (this.data.page === 1) this.scrollToBottom()
     } catch (e) {
       console.error('加载消息失败', e)
     }

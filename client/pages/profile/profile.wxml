@@ -15,14 +15,17 @@
   <view class="profile-hero">
     <view class="hero-bg-gradient"></view>
     <view class="profile-card">
-      <!-- 头像（可点击上传） -->
-      <view class="avatar-wrap" bindtap="chooseAvatar">
+      <!-- 头像 -->
+      <view class="avatar-wrap" bindtap="{{isOtherUser ? '' : 'chooseAvatar'}}">
         <image class="profile-avatar" src="{{userInfo.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
-        <view class="avatar-edit-badge">📷</view>
+        <view class="avatar-edit-badge" wx:if="{{!isOtherUser}}">📷</view>
       </view>
-      <view class="profile-name" bindtap="goEditProfile">{{userInfo.nickname || '旅行者'}} ✏️</view>
-      <view class="profile-bio" bindtap="goEditProfile" wx:if="{{userInfo.bio}}">{{userInfo.bio}}</view>
-      <view class="profile-bio profile-bio-hint" bindtap="goEditProfile" wx:else>点击编辑，添加你的个人介绍</view>
+      <!-- 昵称 -->
+      <view class="profile-name" bindtap="{{isOtherUser ? '' : 'goEditProfile'}}">
+        {{userInfo.nickname || '旅行者'}}{{isOtherUser ? '' : ' ✏️'}}
+      </view>
+      <view class="profile-bio" wx:if="{{userInfo.bio}}">{{userInfo.bio}}</view>
+      <view class="profile-bio profile-bio-hint" bindtap="goEditProfile" wx:elif="{{!isOtherUser}}">点击编辑，添加你的个人介绍</view>
 
       <!-- 数据统计 -->
       <view class="stats-row">
@@ -46,6 +49,29 @@
 
   <!-- 功能菜单 -->
   <view class="menu-section">
+    <!-- 查看他人资料时显示「发消息」 -->
+    <view class="menu-card" wx:if="{{isOtherUser}}">
+      <view class="menu-item" bindtap="startChat">
+        <text class="menu-icon">💬</text>
+        <text class="menu-text">发消息</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-divider"></view>
+      <view class="menu-item" bindtap="goMyTrips">
+        <text class="menu-icon">🗺️</text>
+        <text class="menu-text">TA的行程</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-divider"></view>
+      <view class="menu-item" bindtap="goMyReviews">
+        <text class="menu-icon">⭐</text>
+        <text class="menu-text">TA的评价</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <!-- 自己的菜单 -->
+    <block wx:if="{{!isOtherUser}}">
     <view class="menu-card">
       <view class="menu-item" bindtap="goMyTrips">
         <text class="menu-icon">🗺️</text>
@@ -86,8 +112,9 @@
       </view>
     </view>
   </view>
+  </block>
 
-  <!-- 我的行程列表（内嵌） -->
+  <!-- 行程/评价列表（内嵌） -->
   <view class="trip-list-section" wx:if="{{showTrips}}">
     <view class="section-header">
       <text class="section-title">我的行程</text>
