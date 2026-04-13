@@ -21,3 +21,5 @@ client/project.private.config.json
 
 # Build
 dist/
+private.wx*.key
+server.zip
