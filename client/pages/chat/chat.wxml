@@ -20,8 +20,59 @@
           <text class="msg-time-text">{{item.displayTime}}</text>
         </view>
 
+        <!-- 行程申请卡片（type=apply） -->
+        <view wx:if="{{item.type === 'apply'}}" class="apply-card-wrap {{item.isOwnerView ? 'apply-card-wrap-left' : 'apply-card-wrap-right'}}">
+          <view class="apply-card">
+            <!-- 卡片头 -->
+            <view class="apply-card-header">
+              <view class="apply-card-tag">✈️ 申请同行</view>
+              <view class="apply-card-status apply-status-{{item.applyStatus || 'pending'}}">
+                <text wx:if="{{item.applyStatus === 'approved'}}">✅ 已同意</text>
+                <text wx:elif="{{item.applyStatus === 'rejected'}}">❌ 已拒绝</text>
+                <text wx:else>待确认</text>
+              </view>
+            </view>
+            <!-- 申请人信息 -->
+            <view class="apply-card-user">
+              <image class="apply-avatar" src="{{item.applyData.applicantAvatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
+              <view class="apply-user-info">
+                <text class="apply-name">{{item.applyData.applicantNickname || '旅行者'}}</text>
+                <view class="apply-credit">
+                  <text class="apply-star">★</text>
+                  <text class="apply-credit-score">{{item.applyData.applicantCreditScore || '5.0'}}</text>
+                </view>
+              </view>
+            </view>
+            <!-- 行程信息 -->
+            <view class="apply-trip-info" bindtap="goTripDetail" data-trip-id="{{item.tripId}}">
+              <view class="apply-trip-dest">📍 {{item.applyData.destination}}</view>
+              <view class="apply-trip-date">🗓 {{item.applyData.startDate}} ~ {{item.applyData.endDate}}</view>
+              <view class="apply-trip-members">👥 {{item.applyData.currentMembers || 0}} / {{item.applyData.maxMembers || '不限'}} 人</view>
+            </view>
+            <!-- 审批按钮（行程主视角 + pending 状态） -->
+            <view class="apply-actions" wx:if="{{item.isOwnerView && (!item.applyStatus || item.applyStatus === 'pending')}}">
+              <view
+                class="apply-btn apply-btn-reject"
+                catchtap="rejectApply"
+                data-trip-id="{{item.tripId}}"
+                data-user-id="{{item.senderId}}"
+              >拒绝</view>
+              <view
+                class="apply-btn apply-btn-approve"
+                catchtap="approveApply"
+                data-trip-id="{{item.tripId}}"
+                data-user-id="{{item.senderId}}"
+              >同意</view>
+            </view>
+            <!-- 查看行程入口（申请人视角 / 已处理后） -->
+            <view class="apply-view-link" wx:else bindtap="goTripDetail" data-trip-id="{{item.tripId}}">
+              查看行程详情 →
+            </view>
+          </view>
+        </view>
+
         <!-- 系统消息：行程卡片（有 tripId） -->
-        <view wx:if="{{item.type === 'system' && item.tripId}}" class="system-card-wrap">
+        <view wx:elif="{{item.type === 'system' && item.tripId}}" class="system-card-wrap">
           <view class="system-trip-card" bindtap="goTripDetail" data-trip-id="{{item.tripId}}">
             <view class="system-card-icon">✈️</view>
             <view class="system-card-body">

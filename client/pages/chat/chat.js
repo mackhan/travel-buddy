@@ -1,5 +1,5 @@
 // pages/chat/chat.js
-const { get } = require('../../utils/request')
+const { get, post } = require('../../utils/request')
 const socket = require('../../utils/socket')
 
 /** 获取当前用户 ID（兼容 id 和 _id） */
@@ -69,19 +69,22 @@ Page({
     page: 1,
     isTyping: false,
     myAvatar: '',
-    otherAvatar: ''
+    otherAvatar: '',
+    myId: ''
   },
 
   onLoad(options) {
     const { conversationId, userId, nickname } = options
     const app = getApp()
     const myInfo = app.globalData.userInfo || {}
+    const myId = myInfo.id || myInfo._id || ''
 
     this.setData({
       conversationId,
       otherUserId: userId,
       otherNickname: nickname || '搭子',
-      myAvatar: myInfo.avatar || '/assets/default-avatar.png'
+      myAvatar: myInfo.avatar || '/assets/default-avatar.png',
+      myId
     })
 
     wx.setNavigationBarTitle({ title: nickname || '聊天' })
@@ -146,6 +149,18 @@ Page({
       wx.showToast({ title, icon: 'none', duration: 3000 })
     }
     socket.on('trip:notify', this.onTripNotify)
+
+    // 监听申请状态变更（行程主审批后实时刷新卡片）
+    this.onApplyUpdate = (data) => {
+      const messages = this.data.messages.map(m => {
+        if (m.type === 'apply' && m.tripId === data.tripId) {
+          return { ...m, applyStatus: data.applyStatus }
+        }
+        return m
+      })
+      this.setData({ messages })
+    }
+    socket.on('apply:update', this.onApplyUpdate)
   },
 
   onUnload() {
@@ -153,6 +168,7 @@ Page({
     socket.off('chat:sent', this.onSentConfirm)
     socket.off('chat:typing', this.onTyping)
     socket.off('trip:notify', this.onTripNotify)
+    socket.off('apply:update', this.onApplyUpdate)
     clearTimeout(this.typingTimer)
   },
 
@@ -169,6 +185,18 @@ Page({
         // 兼容 MySQL(msg.sender) 和 MongoDB(msg.senderId)
         const sender = msg.sender || msg.senderId || {}
         const senderId = sender.id || sender._id || msg.senderId
+        const isMine = String(senderId) === String(myId)
+
+        // apply 消息：解析 JSON content，标记是否是行程主视角（可审批）
+        let applyData = null
+        if (msg.type === 'apply') {
+          try { applyData = JSON.parse(msg.content) } catch (e) { applyData = {} }
+          // isOwnerView: 我是接收方（行程主），且状态还是 pending
+          const receiverId = msg.receiverId || (msg.receiver && (msg.receiver.id || msg.receiver._id))
+          const isOwnerView = String(receiverId) === String(myId)
+          return { ...msg, sender, isMine, applyData, isOwnerView }
+        }
+
         return {
           ...msg,
           sender,
@@ -245,5 +273,44 @@ Page({
     const tripId = e.currentTarget.dataset.tripId
     if (!tripId) return
     wx.navigateTo({ url: `/pages/detail/detail?id=${tripId}` })
+  },
+
+  /** 同意申请 */
+  async approveApply(e) {
+    const { tripId, userId } = e.currentTarget.dataset
+    wx.showLoading({ title: '处理中...' })
+    try {
+      await post(`/trips/${tripId}/approve/${userId}`)
+      // 本地立即更新卡片状态
+      const messages = this.data.messages.map(m => {
+        if (m.type === 'apply' && m.tripId === tripId) return { ...m, applyStatus: 'approved' }
+        return m
+      })
+      this.setData({ messages })
+      wx.showToast({ title: '已同意申请', icon: 'success' })
+    } catch (e) {
+      wx.showToast({ title: e.message || '操作失败', icon: 'none' })
+    } finally {
+      wx.hideLoading()
+    }
+  },
+
+  /** 拒绝申请 */
+  async rejectApply(e) {
+    const { tripId, userId } = e.currentTarget.dataset
+    wx.showLoading({ title: '处理中...' })
+    try {
+      await post(`/trips/${tripId}/reject/${userId}`)
+      const messages = this.data.messages.map(m => {
+        if (m.type === 'apply' && m.tripId === tripId) return { ...m, applyStatus: 'rejected' }
+        return m
+      })
+      this.setData({ messages })
+      wx.showToast({ title: '已拒绝申请', icon: 'none' })
+    } catch (e) {
+      wx.showToast({ title: e.message || '操作失败', icon: 'none' })
+    } finally {
+      wx.hideLoading()
+    }
   }
 })

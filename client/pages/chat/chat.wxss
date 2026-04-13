@@ -207,3 +207,166 @@
   line-height: 1.6;
   max-width: 85%;
 }
+
+/* ====== 行程申请卡片 ====== */
+.apply-card-wrap {
+  display: flex;
+  margin-bottom: 24rpx;
+}
+
+/* 行程主收到申请：卡片靠左 */
+.apply-card-wrap-left {
+  justify-content: flex-start;
+}
+
+/* 申请人发出申请：卡片靠右 */
+.apply-card-wrap-right {
+  justify-content: flex-end;
+}
+
+.apply-card {
+  width: 580rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.08);
+  border: 1rpx solid #F0F0F0;
+}
+
+/* 卡片头部 */
+.apply-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #12B7B5 0%, #0E9D9B 100%);
+  padding: 20rpx 28rpx;
+}
+
+.apply-card-tag {
+  font-size: 26rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.apply-card-status {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.apply-status-pending {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.apply-status-approved {
+  background: #E8F8F7;
+  color: #0E9D9B;
+}
+
+.apply-status-rejected {
+  background: #FFF0F0;
+  color: #FF4D4F;
+}
+
+/* 申请人信息 */
+.apply-card-user {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 28rpx 16rpx;
+  border-bottom: 1rpx solid #F5F7FA;
+}
+
+.apply-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.apply-user-info {
+  margin-left: 20rpx;
+}
+
+.apply-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1A1A2E;
+  display: block;
+}
+
+.apply-credit {
+  display: flex;
+  align-items: center;
+  margin-top: 6rpx;
+}
+
+.apply-star {
+  color: #FFB800;
+  font-size: 24rpx;
+}
+
+.apply-credit-score {
+  font-size: 24rpx;
+  color: #666;
+  margin-left: 4rpx;
+}
+
+/* 行程信息 */
+.apply-trip-info {
+  padding: 16rpx 28rpx 20rpx;
+}
+
+.apply-trip-dest {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1A1A2E;
+  margin-bottom: 10rpx;
+}
+
+.apply-trip-date,
+.apply-trip-members {
+  font-size: 24rpx;
+  color: #888;
+  margin-bottom: 6rpx;
+  line-height: 1.6;
+}
+
+/* 审批按钮 */
+.apply-actions {
+  display: flex;
+  gap: 20rpx;
+  padding: 16rpx 28rpx 24rpx;
+  border-top: 1rpx solid #F5F7FA;
+}
+
+.apply-btn {
+  flex: 1;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.apply-btn-reject {
+  background: #F5F5F5;
+  color: #666;
+}
+
+.apply-btn-approve {
+  background: linear-gradient(135deg, #12B7B5 0%, #0E9D9B 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4rpx 16rpx rgba(18, 183, 181, 0.3);
+}
+
+/* 查看行程链接 */
+.apply-view-link {
+  padding: 16rpx 28rpx 24rpx;
+  font-size: 24rpx;
+  color: #12B7B5;
+  text-align: center;
+  border-top: 1rpx solid #F5F7FA;
+}

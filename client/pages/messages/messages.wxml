@@ -25,7 +25,9 @@
           <text class="conv-time">{{item.timeText}}</text>
         </view>
         <view class="conv-bottom">
-          <text class="conv-preview">{{item.lastMessage.content || ''}}</text>
+          <text class="conv-preview" wx:if="{{item.lastMessage.type === 'apply'}}">✈️ 申请同行</text>
+          <text class="conv-preview" wx:elif="{{item.lastMessage.type === 'system'}}">📢 {{item.lastMessage.content}}</text>
+          <text class="conv-preview" wx:else>{{item.lastMessage.content || ''}}</text>
         </view>
       </view>
     </view>

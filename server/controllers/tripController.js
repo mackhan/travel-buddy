@@ -189,16 +189,27 @@ exports.join = async (req, res) => {
     }
 
     // 获取申请者信息
-    const applicant = await User.findByPk(req.userId, { attributes: ['id', 'nickname', 'avatar'] })
+    const applicant = await User.findByPk(req.userId, { attributes: ['id', 'nickname', 'avatar', 'creditScore'] })
 
-    // 给行程发布者发系统消息，附带 tripId
+    // 给行程发布者发「申请」类型消息（卡片式）
     const conversationId = [trip.userId, req.userId].sort().join('_')
     await Message.create({
       conversationId,
       senderId: req.userId,
       receiverId: trip.userId,
-      content: `【申请同行】${applicant ? applicant.nickname : '旅行者'} 想加入你的行程「${trip.destination}」，点击查看详情。`,
-      type: 'system',
+      content: JSON.stringify({
+        applicantNickname: applicant ? applicant.nickname : '旅行者',
+        applicantAvatar: applicant ? applicant.avatar : '',
+        applicantCreditScore: applicant ? applicant.creditScore : 5.0,
+        destination: trip.destination,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        maxMembers: trip.maxMembers,
+        currentMembers: trip.currentMembers,
+        tripId: trip.id
+      }),
+      type: 'apply',
+      applyStatus: 'pending',
       tripId: trip.id
     })
 
@@ -243,8 +254,15 @@ exports.approve = async (req, res) => {
     await member.update({ status: 'approved' }, { transaction: t })
     await trip.increment('currentMembers', { by: 1, transaction: t })
 
-    // 发通知消息给申请者
+    // 更新申请消息的 applyStatus 为 approved
     const conversationId = [trip.userId, applicantUserId].sort().join('_')
+    const applyMsg = await Message.findOne({
+      where: { conversationId, tripId: trip.id, senderId: applicantUserId, type: 'apply' },
+      order: [['createdAt', 'DESC']], transaction: t
+    })
+    if (applyMsg) await applyMsg.update({ applyStatus: 'approved' }, { transaction: t })
+
+    // 发通知消息给申请者
     await Message.create({
       conversationId,
       senderId: trip.userId,
@@ -255,6 +273,9 @@ exports.approve = async (req, res) => {
     }, { transaction: t })
 
     await t.commit()
+
+    // socket 推送状态变更给申请人（实时刷新卡片）
+    sendToUser(applicantUserId, 'apply:update', { tripId: trip.id, applyStatus: 'approved', msgId: applyMsg && applyMsg.id })
     success(res, { approved: true }, '已同意申请')
   } catch (err) {
     await t.rollback()
@@ -279,8 +300,15 @@ exports.reject = async (req, res) => {
 
     await member.update({ status: 'rejected' }, { transaction: t })
 
-    // 发通知消息给申请者
+    // 更新申请消息的 applyStatus 为 rejected
     const conversationId = [trip.userId, applicantUserId].sort().join('_')
+    const applyMsg = await Message.findOne({
+      where: { conversationId, tripId: trip.id, senderId: applicantUserId, type: 'apply' },
+      order: [['createdAt', 'DESC']], transaction: t
+    })
+    if (applyMsg) await applyMsg.update({ applyStatus: 'rejected' }, { transaction: t })
+
+    // 发通知消息给申请者
     await Message.create({
       conversationId,
       senderId: trip.userId,
@@ -291,6 +319,8 @@ exports.reject = async (req, res) => {
     }, { transaction: t })
 
     await t.commit()
+    // socket 推送状态变更给申请人
+    sendToUser(applicantUserId, 'apply:update', { tripId: trip.id, applyStatus: 'rejected', msgId: applyMsg && applyMsg.id })
     success(res, { rejected: true }, '已拒绝申请')
   } catch (err) {
     await t.rollback()

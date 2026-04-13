@@ -64,7 +64,7 @@ const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
 const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
 
 async function run() {
-  console.log('\n🧪 旅行搭子 完整接口测试 v1.0.30\n' + '━'.repeat(55))
+  console.log('\n🧪 旅行搭子 完整接口测试 v1.0.31\n' + '━'.repeat(55))
 
   // ===== 1. 基础连接 =====
   console.log('\n[ 基础连接 ]')
@@ -234,6 +234,14 @@ async function run() {
       if (r.status === 200) {
         assert(r.data.data.conversationId, '缺少conversationId')
         console.log('     → 申请成功，conversationId=' + r.data.data.conversationId)
+        // 验证生成的消息是 apply 类型
+        const convId = r.data.data.conversationId
+        const msgR = await request(`/messages/${convId}`, 'GET', null, TEST_TOKEN)
+        if (msgR.status === 200 && msgR.data.data.list && msgR.data.data.list.length > 0) {
+          const applyMsg = msgR.data.data.list.find(m => m.type === 'apply')
+          assert(applyMsg, '申请消息应为 apply 类型，当前消息类型: ' + msgR.data.data.list.map(m => m.type).join(','))
+          console.log('     → apply 消息类型验证通过')
+        }
       } else {
         console.log(`     → ${r.status}: ${r.data.message} (外键限制或满员，真机登录后正常)`)
       }
