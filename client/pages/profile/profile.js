@@ -1,5 +1,5 @@
 // pages/profile/profile.js
-const { get, put } = require('../../utils/request')
+const { get, put, post } = require('../../utils/request')
 const { formatDate, timeAgo, getConversationId } = require('../../utils/util')
 const { logout } = require('../../utils/auth')
 
@@ -342,31 +342,39 @@ Page({
   showAbout() {
     wx.showModal({
       title: '旅行搭子',
-      content: '版本 1.0.36\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
+      content: '版本 1.0.37\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
       showCancel: false
     })
   },
 
-  // 调试：切换账号（粘贴 token 直接登录另一个账号）
+  // 调试：切换账号（输入昵称，自动创建/复用测试账号）
   switchAccount() {
     wx.showModal({
-      title: '🔧 切换账号（调试）',
-      content: '请粘贴目标账号的 Token，切换后将以该账号身份操作',
+      title: '🔧 切换测试账号',
+      content: '输入昵称，自动创建/复用对应测试账号',
       editable: true,
-      placeholderText: '粘贴 Token...',
+      placeholderText: '如：测试账号B',
       confirmText: '切换',
       cancelText: '取消',
-      success: (res) => {
-        if (!res.confirm || !res.content) return
-        const token = res.content.trim().replace(/^Bearer\s+/i, '')
-        if (!token) { wx.showToast({ title: 'Token 不能为空', icon: 'none' }); return }
-        wx.setStorageSync('token', token)
-        const app = getApp()
-        app.globalData.token = token
-        app.globalData.userInfo = null
-        this.setData({ isOtherUser: false, viewingUserId: null, showTrips: false, showReviews: false })
-        wx.showToast({ title: '切换成功', icon: 'success' })
-        setTimeout(() => this.loadProfile(), 800)
+      success: async (res) => {
+        if (!res.confirm) return
+        const nickname = (res.content || '').trim() || '测试账号'
+        wx.showLoading({ title: '创建中...' })
+        try {
+          const r = await post('/auth/dev-login', { nickname })
+          const { token, userInfo } = r.data
+          wx.setStorageSync('token', token)
+          const app = getApp()
+          app.globalData.token = token
+          app.globalData.userInfo = { ...userInfo, id: userInfo.id, _id: userInfo.id }
+          wx.hideLoading()
+          this.setData({ isOtherUser: false, viewingUserId: null, showTrips: false, showReviews: false })
+          wx.showToast({ title: `已切换为 ${nickname}`, icon: 'success' })
+          setTimeout(() => this.loadProfile(), 800)
+        } catch (e) {
+          wx.hideLoading()
+          wx.showToast({ title: e.message || '切换失败', icon: 'none' })
+        }
       }
     })
   }

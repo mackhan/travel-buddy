@@ -5,5 +5,6 @@ const auth = require('../middleware/auth')
 
 router.post('/login', authController.login)
 router.get('/check', auth, authController.check)
+router.post('/dev-login', authController.devLogin)  // 调试：创建/切换测试账号
 
 module.exports = router
