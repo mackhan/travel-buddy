@@ -21,7 +21,8 @@ app.use('/api/reviews', require('./routes/review'))
 app.use('/api/expenses', require('./routes/expense'))
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() })
+  const pkg = require('./package.json')
+  res.json({ status: 'ok', version: pkg.version, time: new Date().toISOString() })
 })
 
 app.use((req, res) => {
