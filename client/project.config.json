@@ -41,7 +41,7 @@
   },
   "compileType": "miniprogram",
   "cloudfunctionRoot": "cloudfunctions/",
-  "libVersion": "3.3.4",
+  "libVersion": "3.15.2",
   "appid": "wx6c88b825ea663fa8",
   "projectname": "travel-buddy",
   "condition": {},
