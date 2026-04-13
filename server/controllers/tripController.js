@@ -181,6 +181,25 @@ exports.update = async (req, res) => {
   }
 }
 
+/** 申请人主动取消申请 */
+exports.cancelApply = async (req, res) => {
+  try {
+    const trip = await Trip.findByPk(req.params.id)
+    if (!trip) return fail(res, '行程不存在', 404)
+
+    const member = await TripMember.findOne({
+      where: { tripId: trip.id, userId: req.userId, status: 'pending' }
+    })
+    if (!member) return fail(res, '未找到待处理的申请', 404)
+
+    await member.update({ status: 'cancelled' })
+    success(res, { cancelled: true }, '已取消申请')
+  } catch (err) {
+    console.error('取消申请失败:', err)
+    fail(res, '操作失败', 500)
+  }
+}
+
 /** 申请加入行程 */
 exports.join = async (req, res) => {
   try {

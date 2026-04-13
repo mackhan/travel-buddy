@@ -369,6 +369,12 @@
   box-shadow: 0 4rpx 16rpx rgba(18, 183, 181, 0.3);
 }
 
+.apply-btn-cancel {
+  flex: 1;
+  background: #F5F5F5;
+  color: #999;
+}
+
 /* 查看行程链接 */
 .apply-view-link {
   padding: 16rpx 28rpx 24rpx;
