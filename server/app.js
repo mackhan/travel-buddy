@@ -64,8 +64,22 @@ const startServer = () => {
 const { ensureDatabase } = require('./db')
 ensureDatabase()
   .then(() => sequelize.authenticate())
-  .then(() => {
+  .then(async () => {
     console.log('✅ MySQL 已连接')
+    // 补丁：将 messages.type 和 messages.apply_status 从 ENUM 强制改为 VARCHAR
+    // 解决 Sequelize sync alter 无法修改 ENUM 导致 apply 类型无法写入的问题
+    try {
+      await sequelize.query("ALTER TABLE `messages` MODIFY COLUMN `type` VARCHAR(20) NOT NULL DEFAULT 'text'")
+      console.log('✅ messages.type 列已升级为 VARCHAR')
+    } catch (e) {
+      console.log('messages.type 列修改忽略:', e.message)
+    }
+    try {
+      await sequelize.query("ALTER TABLE `messages` MODIFY COLUMN `apply_status` VARCHAR(20) DEFAULT NULL")
+      console.log('✅ messages.apply_status 列已升级为 VARCHAR')
+    } catch (e) {
+      console.log('messages.apply_status 列修改忽略:', e.message)
+    }
     return sequelize.sync({ alter: true })
   })
   .then(() => {
