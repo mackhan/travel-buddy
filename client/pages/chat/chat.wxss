@@ -286,6 +286,13 @@
 
 .apply-user-info {
   margin-left: 20rpx;
+  flex: 1;
+}
+
+.apply-profile-arrow {
+  font-size: 32rpx;
+  color: #CCC;
+  flex-shrink: 0;
 }
 
 .apply-name {

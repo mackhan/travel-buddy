@@ -285,7 +285,26 @@ Page({
   goTripDetail(e) {
     const tripId = e.currentTarget.dataset.tripId
     if (!tripId) return
-    wx.navigateTo({ url: `/pages/detail/detail?id=${tripId}` })
+    wx.navigateTo({ url: `/pages/detail/detail?id=${tripId}`, fail: () => wx.redirectTo({ url: `/pages/detail/detail?id=${tripId}` }) })
+  },
+
+  /** 点击对方头像，跳转查看对方资料 */
+  viewOtherProfile() {
+    const userId = this.data.otherUserId
+    if (!userId) return
+    wx.navigateTo({ url: `/pages/profile/profile?userId=${userId}`, fail: () => wx.redirectTo({ url: `/pages/profile/profile?userId=${userId}` }) })
+  },
+
+  /** 点击自己头像，跳转自己资料 */
+  viewMyProfile() {
+    wx.navigateTo({ url: '/pages/profile/profile', fail: () => wx.switchTab({ url: '/pages/profile/profile' }) })
+  },
+
+  /** 点击申请卡片的申请人，查看申请人资料 */
+  viewApplicantProfile(e) {
+    const userId = e.currentTarget.dataset.userId
+    if (!userId) return
+    wx.navigateTo({ url: `/pages/profile/profile?userId=${userId}`, fail: () => wx.redirectTo({ url: `/pages/profile/profile?userId=${userId}` }) })
   },
 
   /** 同意申请 */

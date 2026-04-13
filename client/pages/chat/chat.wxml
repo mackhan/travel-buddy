@@ -33,7 +33,7 @@
               </view>
             </view>
             <!-- 申请人信息 -->
-            <view class="apply-card-user">
+            <view class="apply-card-user" bindtap="viewApplicantProfile" data-user-id="{{item.senderId}}">
               <image class="apply-avatar" src="{{item.applyData.applicantAvatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
               <view class="apply-user-info">
                 <text class="apply-name">{{item.applyData.applicantNickname || '旅行者'}}</text>
@@ -42,6 +42,7 @@
                   <text class="apply-credit-score">{{item.applyData.applicantCreditScore || '5.0'}}</text>
                 </view>
               </view>
+              <text class="apply-profile-arrow">›</text>
             </view>
             <!-- 行程信息 -->
             <view class="apply-trip-info" bindtap="goTripDetail" data-trip-id="{{item.tripId}}">
@@ -93,20 +94,24 @@
           class="msg-item {{item.isMine ? 'msg-mine' : 'msg-other'}}"
           id="msg-{{item._id}}"
         >
+          <!-- 对方头像（可点击查看资料） -->
           <image
             class="msg-avatar"
-            src="{{item.isMine ? myAvatar : otherAvatar}}"
+            src="{{otherAvatar || '/assets/default-avatar.png'}}"
             mode="aspectFill"
             wx:if="{{!item.isMine}}"
+            bindtap="viewOtherProfile"
           />
           <view class="msg-bubble">
             <text class="msg-text">{{item.content}}</text>
           </view>
+          <!-- 自己头像（可点击查看自己资料） -->
           <image
             class="msg-avatar"
-            src="{{item.isMine ? myAvatar : otherAvatar}}"
+            src="{{myAvatar || '/assets/default-avatar.png'}}"
             mode="aspectFill"
             wx:if="{{item.isMine}}"
+            bindtap="viewMyProfile"
           />
         </view>
       </block>
