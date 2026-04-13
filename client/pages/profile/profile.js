@@ -1,5 +1,5 @@
 // pages/profile/profile.js
-const { get, put, post } = require('../../utils/request')
+const { get, put, post, del } = require('../../utils/request')
 const { formatDate, timeAgo, getConversationId } = require('../../utils/util')
 const { logout } = require('../../utils/auth')
 
@@ -359,7 +359,7 @@ Page({
       success: async (res) => {
         if (!res.confirm) return
         const nickname = (res.content || '').trim() || '测试账号'
-        wx.showLoading({ title: '创建中...' })
+        wx.showLoading({ title: '切换中...' })
         try {
           const r = await post('/auth/dev-login', { nickname })
           const { token, userInfo } = r.data
@@ -374,6 +374,29 @@ Page({
         } catch (e) {
           wx.hideLoading()
           wx.showToast({ title: e.message || '切换失败', icon: 'none' })
+        }
+      }
+    })
+  },
+
+  // 取消申请
+  async cancelApply(e) {
+    const applyId = e.currentTarget.dataset.applyId || e.currentTarget.dataset.tripId
+    wx.showModal({
+      title: '确认取消',
+      content: '确定要取消这个申请吗？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: '取消中...' })
+            await del(`/trips/${applyId}/cancel-apply`)
+            wx.hideLoading()
+            wx.showToast({ title: '已取消', icon: 'success' })
+            this.loadAppliedTrips() // 刷新列表
+          } catch (e) {
+            wx.hideLoading()
+            wx.showToast({ title: '取消失败', icon: 'none' })
+          }
         }
       }
     })

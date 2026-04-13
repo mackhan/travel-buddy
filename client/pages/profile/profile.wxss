@@ -360,6 +360,20 @@
 .apply-status-approved { background: #F0FFF4; color: #52C41A; font-size: 22rpx; padding: 4rpx 14rpx; border-radius: 100rpx; }
 .apply-status-rejected { background: #FFF1F0; color: #FF4D4F; font-size: 22rpx; padding: 4rpx 14rpx; border-radius: 100rpx; }
 
+/* 取消申请按钮 */
+.cancel-apply-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12rpx;
+  padding: 12rpx 24rpx;
+  background: #FFF1F0;
+  color: #FF4D4F;
+  font-size: 24rpx;
+  border-radius: 100rpx;
+  font-weight: 500;
+}
+
 .my-trip-tags {
   display: flex;
   gap: 10rpx;

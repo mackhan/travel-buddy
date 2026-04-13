@@ -180,6 +180,12 @@
         </view>
         <view class="my-trip-dates">📅 {{item.trip.startDateText}} — {{item.trip.endDateText}}</view>
         <view class="my-trip-owner">👤 发起人：{{item.trip.user && item.trip.user.nickname}}</view>
+        <view class="cancel-apply-btn"
+              wx:if="{{item.status === 'pending'}}"
+              catchtap="cancelApply"
+              data-apply-id="{{item.id || item._id}}">
+          取消申请
+        </view>
       </view>
       <view class="empty-state" wx:if="{{appliedTrips.length === 0}}">
         <text class="empty-icon">✈️</text>
