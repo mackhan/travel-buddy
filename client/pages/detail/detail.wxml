@@ -155,14 +155,14 @@
       <text>⏳ 申请中...</text>
     </view>
     <!-- 已加入 -->
-    <view wx:elif="{{trip.myMemberStatus === 'approved'}}" style="display:contents">
+    <block wx:elif="{{trip.myMemberStatus === 'approved'}}">
       <view class="action-btn join-btn join-joined">
         <text>✅ 已加入</text>
       </view>
       <view class="action-btn leave-btn" bindtap="leaveTrip">
         <text>🚶 退出行程</text>
       </view>
-    </view>
+    </block>
     <!-- 已退出，可重新申请 -->
     <view class="action-btn join-btn join-left" wx:elif="{{trip.myMemberStatus === 'left'}}" bindtap="joinTrip">
       <text>↩ 重新申请</text>

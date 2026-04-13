@@ -183,7 +183,7 @@
         <view class="cancel-apply-btn"
               wx:if="{{item.status === 'pending'}}"
               catchtap="cancelApply"
-              data-apply-id="{{item.id || item._id}}">
+              data-trip-id="{{item.trip.id || item.trip._id}}">
           取消申请
         </view>
       </view>

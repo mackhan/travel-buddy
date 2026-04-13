@@ -77,3 +77,22 @@ exports.devLogin = async (req, res) => {
     fail(res, '创建调试账号失败', 500)
   }
 }
+
+/**
+ * 调试用：列出已有测试账号
+ * GET /auth/dev-accounts
+ */
+exports.devAccounts = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: { openid: { [require('sequelize').Op.like]: 'dev_%' } },
+      attributes: ['id', 'nickname', 'avatar', 'creditScore', 'createdAt'],
+      order: [['createdAt', 'ASC']],
+      limit: 20
+    })
+    success(res, { list: users })
+  } catch (err) {
+    console.error('devAccounts 失败:', err)
+    fail(res, '获取调试账号列表失败', 500)
+  }
+}

@@ -342,46 +342,92 @@ Page({
   showAbout() {
     wx.showModal({
       title: '旅行搭子',
-      content: '版本 1.0.38\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
+      content: '版本 1.0.40\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
       showCancel: false
     })
   },
 
-  // 调试：切换账号（输入昵称，自动创建/复用测试账号）
-  switchAccount() {
+  // 调试：切换账号（先列出已有账号，或输入新昵称创建）
+  async switchAccount() {
+    try {
+      wx.showLoading({ title: '加载中...' })
+      const res = await get('/auth/dev-accounts')
+      wx.hideLoading()
+      const accounts = (res.data && res.data.list) || []
+      
+      if (accounts.length > 0) {
+        // 有已有账号，展示选择列表
+        const accountNames = accounts.map(a => a.nickname || `账号${a.id}`)
+        accountNames.push('➕ 创建新账号')
+        
+        wx.showActionSheet({
+          itemList: accountNames,
+          success: async (res) => {
+            if (res.tapIndex === accountNames.length - 1) {
+              // 选择创建新账号
+              this._createNewAccount()
+            } else {
+              // 选择已有账号
+              const selected = accounts[res.tapIndex]
+              this._loginAsAccount(selected.nickname)
+            }
+          }
+        })
+      } else {
+        // 没有已有账号，直接创建
+        this._createNewAccount()
+      }
+    } catch (e) {
+      wx.hideLoading()
+      // 获取列表失败，降级为输入模式
+      this._createNewAccount()
+    }
+  },
+
+  // 切换到指定昵称的账号
+  async _loginAsAccount(nickname) {
+    wx.showLoading({ title: '切换中...' })
+    try {
+      const r = await post('/auth/dev-login', { nickname })
+      const { token, userInfo } = r.data
+      wx.setStorageSync('token', token)
+      const app = getApp()
+      app.globalData.token = token
+      app.globalData.userInfo = { ...userInfo, id: userInfo.id, _id: userInfo.id }
+      wx.hideLoading()
+      this.setData({ isOtherUser: false, viewingUserId: null, showTrips: false, showReviews: false })
+      wx.showToast({ title: `已切换为 ${nickname}`, icon: 'success' })
+      setTimeout(() => this.loadProfile(), 800)
+    } catch (e) {
+      wx.hideLoading()
+      wx.showToast({ title: e.message || '切换失败', icon: 'none' })
+    }
+  },
+
+  // 创建新账号
+  _createNewAccount() {
     wx.showModal({
-      title: '🔧 切换测试账号',
-      content: '输入昵称，自动创建/复用对应测试账号',
+      title: '🔧 创建新测试账号',
+      content: '输入昵称创建新账号',
       editable: true,
       placeholderText: '如：测试账号B',
-      confirmText: '切换',
+      confirmText: '创建',
       cancelText: '取消',
       success: async (res) => {
         if (!res.confirm) return
         const nickname = (res.content || '').trim() || '测试账号'
-        wx.showLoading({ title: '切换中...' })
-        try {
-          const r = await post('/auth/dev-login', { nickname })
-          const { token, userInfo } = r.data
-          wx.setStorageSync('token', token)
-          const app = getApp()
-          app.globalData.token = token
-          app.globalData.userInfo = { ...userInfo, id: userInfo.id, _id: userInfo.id }
-          wx.hideLoading()
-          this.setData({ isOtherUser: false, viewingUserId: null, showTrips: false, showReviews: false })
-          wx.showToast({ title: `已切换为 ${nickname}`, icon: 'success' })
-          setTimeout(() => this.loadProfile(), 800)
-        } catch (e) {
-          wx.hideLoading()
-          wx.showToast({ title: e.message || '切换失败', icon: 'none' })
-        }
+        this._loginAsAccount(nickname)
       }
     })
   },
 
   // 取消申请
   async cancelApply(e) {
-    const applyId = e.currentTarget.dataset.applyId || e.currentTarget.dataset.tripId
+    const tripId = e.currentTarget.dataset.tripId
+    if (!tripId) {
+      wx.showToast({ title: '参数错误', icon: 'none' })
+      return
+    }
     wx.showModal({
       title: '确认取消',
       content: '确定要取消这个申请吗？',
@@ -389,13 +435,13 @@ Page({
         if (res.confirm) {
           try {
             wx.showLoading({ title: '取消中...' })
-            await del(`/trips/${applyId}/cancel-apply`)
+            await del(`/trips/${tripId}/cancel-apply`)
             wx.hideLoading()
             wx.showToast({ title: '已取消', icon: 'success' })
-            this.loadAppliedTrips() // 刷新列表
+            this.loadAppliedTrips()
           } catch (e) {
             wx.hideLoading()
-            wx.showToast({ title: '取消失败', icon: 'none' })
+            wx.showToast({ title: e.message || '取消失败', icon: 'none' })
           }
         }
       }
