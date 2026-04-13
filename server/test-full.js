@@ -169,6 +169,10 @@ async function run() {
     assert(r.status === 400, `预期400，实际${r.status}`)
     assert(r.data.message.includes('结束时间'), `消息: ${r.data.message}`)
   })
+  await test('POST /api/trips 同一天行程 → 允许(非400)', async () => {
+    const r = await request('/api/trips', 'POST', { destination: '北京', startDate: tomorrow, endDate: tomorrow, tags: ['拼车'], title: '同日游' }, TEST_TOKEN)
+    assert(r.status !== 400 || r.data.message.includes('外键') || r.data.message.includes('用户'), `同一天行程不应返回日期校验400，实际: ${r.status} ${r.data.message}`)
+  })
   await test('POST /api/trips 完整数据 → 200或500(外键,真机可用)', async () => {
     const r = await request('/api/trips', 'POST', {
       destination: '测试城市_自动测试', title: '自动测试行程',

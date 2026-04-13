@@ -128,7 +128,8 @@ Page({
         wx.switchTab({ url: '/pages/index/index' })
       }, 1500)
     } catch (e) {
-      wx.showToast({ title: '发布失败', icon: 'none' })
+      const msg = (e && e.message) || '发布失败，请重试'
+      wx.showModal({ title: '发布失败', content: msg, showCancel: false })
     } finally {
       this.setData({ submitting: false })
     }
