@@ -338,6 +338,114 @@ function mockRequest(url, method, data) {
     }
   }
 
+  // POST /auth/dev-login
+  if (path === '/auth/dev-login' && method === 'POST') {
+    const nickname = (data && data.nickname) || '测试账号'
+    const devUser = {
+      id: 'dev_' + Date.now(),
+      _id: 'dev_' + Date.now(),
+      nickname: nickname,
+      avatar: '',
+      creditScore: 5.0,
+      bio: ''
+    }
+    return {
+      statusCode: 200,
+      data: { code: 0, data: { token: 'mock_dev_token_' + Date.now(), userInfo: devUser }, message: 'ok' }
+    }
+  }
+
+  // GET /auth/dev-accounts
+  if (path === '/auth/dev-accounts' && method === 'GET') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: { list: [{ id: 'dev_1', nickname: '旅行体验官', avatar: '', creditScore: 4.8 }] }, message: 'ok' }
+    }
+  }
+
+  // GET /trips/mine
+  if (path.startsWith('/trips/mine') && method === 'GET') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: { list: MOCK_TRIPS.filter(t => t.userId._id === MOCK_USER.id) }, message: 'ok' }
+    }
+  }
+
+  // GET /trips/applied
+  if (path.startsWith('/trips/applied') && method === 'GET') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: { list: [] }, message: 'ok' }
+    }
+  }
+
+  // POST /trips/:id/cancel-apply
+  if (path.match(/^\/trips\/[^/]+\/cancel-apply$/) && method === 'DELETE') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: null, message: '取消成功' }
+    }
+  }
+
+  // GET /users/:id
+  const userMatch = path.match(/^\/users\/([^/?]+)$/)
+  if (userMatch && method === 'GET') {
+    const uid = userMatch[1]
+    const user = uid === MOCK_USER.id ? MOCK_USER : { id: uid, _id: uid, nickname: '旅行者', avatar: '', creditScore: 5.0, bio: '' }
+    return {
+      statusCode: 200,
+      data: { code: 0, data: user, message: 'ok' }
+    }
+  }
+
+  // GET /trips/:id/members
+  if (path.match(/^\/trips\/[^/]+\/members$/) && method === 'GET') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: [], message: 'ok' }
+    }
+  }
+
+  // GET /trips/:id/applicants
+  if (path.match(/^\/trips\/[^/]+\/applicants$/) && method === 'GET') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: [], message: 'ok' }
+    }
+  }
+
+  // POST /trips/:id/approve/:userId
+  if (path.match(/^\/trips\/[^/]+\/approve\//) && method === 'POST') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: null, message: 'ok' }
+    }
+  }
+
+  // POST /trips/:id/reject/:userId
+  if (path.match(/^\/trips\/[^/]+\/reject\//) && method === 'POST') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: null, message: 'ok' }
+    }
+  }
+
+  // DELETE /trips/:id/leave
+  if (path.match(/^\/trips\/[^/]+\/leave$/) && method === 'DELETE') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: null, message: 'ok' }
+    }
+  }
+
+  // PUT /trips/:id
+  if (path.match(/^\/trips\/[^/]+$/) && method === 'PUT') {
+    return {
+      statusCode: 200,
+      data: { code: 0, data: null, message: 'ok' }
+    }
+  }
+
   // 默认 200 空数据
   return {
     statusCode: 200,

@@ -517,3 +517,18 @@
   color: #7C5CBF !important;
   box-shadow: none !important;
 }
+
+/* 详情页取消申请按钮 */
+.cancel-apply-btn-detail {
+  background: #FFF1F1 !important;
+  color: #FF6B6B !important;
+  box-shadow: none !important;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 0;
+  border-radius: 20rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}

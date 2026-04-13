@@ -307,5 +307,24 @@ Page({
     } catch (e) { wx.showToast({ title: '操作失败', icon: 'none' }) }
   },
 
+  /** 取消申请 */
+  async cancelApply() {
+    const res = await new Promise(resolve => {
+      wx.showModal({ title: '确认取消', content: '确定要取消这个申请吗？', success: resolve })
+    })
+    if (!res.confirm) return
+    try {
+      wx.showLoading({ title: '取消中...' })
+      const id = this.data.trip.id || this.data.trip._id
+      await del(`/trips/${id}/cancel-apply`)
+      wx.hideLoading()
+      wx.showToast({ title: '已取消申请', icon: 'success' })
+      setTimeout(() => this.loadTrip(id), 800)
+    } catch (e) {
+      wx.hideLoading()
+      wx.showToast({ title: e.message || '取消失败', icon: 'none' })
+    }
+  },
+
   stopPropagation() {}
 })

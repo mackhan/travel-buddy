@@ -151,9 +151,14 @@
       <text>😅 行程已满员</text>
     </view>
     <!-- 待审批 -->
-    <view class="action-btn join-btn join-pending" wx:elif="{{trip.myMemberStatus === 'pending'}}">
-      <text>⏳ 申请中...</text>
-    </view>
+    <block wx:elif="{{trip.myMemberStatus === 'pending'}}">
+      <view class="action-btn join-btn join-pending">
+        <text>⏳ 申请中</text>
+      </view>
+      <view class="action-btn cancel-apply-btn-detail" catchtap="cancelApply">
+        <text>取消申请</text>
+      </view>
+    </block>
     <!-- 已加入 -->
     <block wx:elif="{{trip.myMemberStatus === 'approved'}}">
       <view class="action-btn join-btn join-joined">

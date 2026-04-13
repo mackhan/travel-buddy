@@ -342,7 +342,7 @@ Page({
   showAbout() {
     wx.showModal({
       title: '旅行搭子',
-      content: '版本 1.0.40\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
+      content: '版本 1.0.41\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
       showCancel: false
     })
   },
