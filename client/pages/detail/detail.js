@@ -232,17 +232,35 @@ Page({
   },
 
   viewProfile(e) {
-    // 优先取 data-user-id（已在 wxml 里绑定），兜底取 trip.user
     const id = (e && e.currentTarget && e.currentTarget.dataset.userId)
       || (this.data.trip && this.data.trip.user && (this.data.trip.user.id || this.data.trip.user._id))
-    if (!id || id === 'undefined') { console.warn('[viewProfile] userId 为空'); return }
-    wx.navigateTo({ url: `/pages/profile/profile?userId=${id}` })
+    console.log('[viewProfile] userId=', id)
+    if (!id || String(id) === 'undefined') {
+      wx.showToast({ title: '用户信息加载中', icon: 'none' })
+      return
+    }
+    wx.navigateTo({
+      url: `/pages/profile/profile?userId=${id}`,
+      fail: () => {
+        // 页面栈满时降级为 redirectTo
+        wx.redirectTo({ url: `/pages/profile/profile?userId=${id}` })
+      }
+    })
   },
 
   viewMemberProfile(e) {
     const userId = e.currentTarget.dataset.userId
-    if (!userId || userId === 'undefined') return
-    wx.navigateTo({ url: `/pages/profile/profile?userId=${userId}` })
+    console.log('[viewMemberProfile] userId=', userId)
+    if (!userId || String(userId) === 'undefined') {
+      wx.showToast({ title: '用户信息加载中', icon: 'none' })
+      return
+    }
+    wx.navigateTo({
+      url: `/pages/profile/profile?userId=${userId}`,
+      fail: () => {
+        wx.redirectTo({ url: `/pages/profile/profile?userId=${userId}` })
+      }
+    })
   },
 
   async leaveTrip() {
