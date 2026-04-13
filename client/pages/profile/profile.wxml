@@ -105,6 +105,12 @@
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-divider"></view>
+      <view class="menu-item menu-item-debug" bindtap="switchAccount">
+        <text class="menu-icon">🔧</text>
+        <text class="menu-text">切换账号（调试）</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-divider"></view>
       <view class="menu-item" bindtap="doLogout">
         <text class="menu-icon">🚪</text>
         <text class="menu-text">退出登录</text>
@@ -121,31 +127,65 @@
       <view class="close-btn" bindtap="hideTrips">关闭</view>
     </view>
 
-    <!-- 状态筛选 -->
-    <view class="status-tabs">
-      <view class="status-tab {{tripStatus === '' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="">全部</view>
-      <view class="status-tab {{tripStatus === 'active' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="active">进行中</view>
-      <view class="status-tab {{tripStatus === 'completed' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="completed">已完成</view>
-      <view class="status-tab {{tripStatus === 'cancelled' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="cancelled">已取消</view>
+    <!-- 一级 Tab：我发布的 / 我申请的 -->
+    <view class="review-tabs" style="margin-bottom:16rpx">
+      <view class="review-tab {{tripView === 'mine' ? 'tab-active' : ''}}" bindtap="switchTripView" data-view="mine">我发布的</view>
+      <view class="review-tab {{tripView === 'applied' ? 'tab-active' : ''}}" bindtap="switchTripView" data-view="applied">我申请的</view>
     </view>
 
-    <view class="my-trip-item" wx:for="{{myTrips}}" wx:key="id" bindtap="viewTrip" data-id="{{item.id || item._id}}">
-      <view class="my-trip-top">
-        <text class="my-trip-dest">📍 {{item.destination}}</text>
-        <view class="my-trip-status status-{{item.status}}">
-          {{item.status === 'active' ? '进行中' : item.status === 'completed' ? '已完成' : '已取消'}}
+    <!-- 我发布的行程 -->
+    <block wx:if="{{tripView === 'mine'}}">
+      <!-- 状态筛选 -->
+      <view class="status-tabs">
+        <view class="status-tab {{tripStatus === '' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="">全部</view>
+        <view class="status-tab {{tripStatus === 'active' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="active">进行中</view>
+        <view class="status-tab {{tripStatus === 'completed' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="completed">已完成</view>
+        <view class="status-tab {{tripStatus === 'cancelled' ? 'tab-active' : ''}}" bindtap="filterTrips" data-status="cancelled">已取消</view>
+      </view>
+      <view class="my-trip-item" wx:for="{{myTrips}}" wx:key="id" bindtap="viewTrip" data-id="{{item.id || item._id}}">
+        <view class="my-trip-top">
+          <text class="my-trip-dest">📍 {{item.destination}}</text>
+          <view class="my-trip-status status-{{item.status}}">
+            {{item.status === 'active' ? '进行中' : item.status === 'completed' ? '已完成' : '已取消'}}
+          </view>
+        </view>
+        <view class="my-trip-dates">📅 {{item.startDateText}} — {{item.endDateText}}</view>
+        <view class="my-trip-members" wx:if="{{item.maxMembers > 0}}">
+          👥 {{item.currentMembers || 1}} / {{item.maxMembers}} 人
+        </view>
+        <view class="my-trip-tags">
+          <text class="my-trip-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
         </view>
       </view>
-      <view class="my-trip-dates">📅 {{item.startDateText}} — {{item.endDateText}}</view>
-      <view class="my-trip-tags">
-        <text class="my-trip-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+      <view class="empty-state" wx:if="{{myTrips.length === 0}}">
+        <text class="empty-icon">🗺️</text>
+        <text class="empty-text">还没有发布行程</text>
       </view>
-    </view>
+    </block>
 
-    <view class="empty-state" wx:if="{{myTrips.length === 0}}">
-      <text class="empty-icon">🗺️</text>
-      <text class="empty-text">还没有行程</text>
-    </view>
+    <!-- 我申请的行程 -->
+    <block wx:if="{{tripView === 'applied'}}">
+      <view class="status-tabs">
+        <view class="status-tab {{applyStatus === '' ? 'tab-active' : ''}}" bindtap="filterApplied" data-status="">全部</view>
+        <view class="status-tab {{applyStatus === 'pending' ? 'tab-active' : ''}}" bindtap="filterApplied" data-status="pending">⏳ 申请中</view>
+        <view class="status-tab {{applyStatus === 'approved' ? 'tab-active' : ''}}" bindtap="filterApplied" data-status="approved">✅ 已通过</view>
+        <view class="status-tab {{applyStatus === 'rejected' ? 'tab-active' : ''}}" bindtap="filterApplied" data-status="rejected">❌ 未通过</view>
+      </view>
+      <view class="my-trip-item" wx:for="{{appliedTrips}}" wx:key="id" bindtap="viewTrip" data-id="{{item.trip.id || item.trip._id}}">
+        <view class="my-trip-top">
+          <text class="my-trip-dest">📍 {{item.trip.destination}}</text>
+          <view class="my-trip-status apply-status-{{item.status}}">
+            {{item.status === 'pending' ? '⏳ 申请中' : item.status === 'approved' ? '✅ 已通过' : '❌ 未通过'}}
+          </view>
+        </view>
+        <view class="my-trip-dates">📅 {{item.trip.startDateText}} — {{item.trip.endDateText}}</view>
+        <view class="my-trip-owner">👤 发起人：{{item.trip.user && item.trip.user.nickname}}</view>
+      </view>
+      <view class="empty-state" wx:if="{{appliedTrips.length === 0}}">
+        <text class="empty-icon">✈️</text>
+        <text class="empty-text">还没有申请过行程</text>
+      </view>
+    </block>
   </view>
 
   <!-- 我的评价列表 -->

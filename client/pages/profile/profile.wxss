@@ -193,6 +193,12 @@
   background: #F5F7FA;
 }
 
+/* 调试菜单项 */
+.menu-item-debug .menu-text {
+  color: #999 !important;
+  font-size: 26rpx !important;
+}
+
 .menu-icon {
   font-size: 36rpx;
   margin-right: 20rpx;
@@ -336,6 +342,23 @@
   color: #666666;
   margin-bottom: 10rpx;
 }
+
+.my-trip-members {
+  font-size: 24rpx;
+  color: #FF8C42;
+  margin-bottom: 8rpx;
+}
+
+.my-trip-owner {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+/* 申请状态标签 */
+.apply-status-pending { background: #FFF8F0; color: #FF8C42; font-size: 22rpx; padding: 4rpx 14rpx; border-radius: 100rpx; }
+.apply-status-approved { background: #F0FFF4; color: #52C41A; font-size: 22rpx; padding: 4rpx 14rpx; border-radius: 100rpx; }
+.apply-status-rejected { background: #FFF1F0; color: #FF4D4F; font-size: 22rpx; padding: 4rpx 14rpx; border-radius: 100rpx; }
 
 .my-trip-tags {
   display: flex;

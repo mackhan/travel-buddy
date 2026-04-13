@@ -137,6 +137,28 @@
   font-weight: 500;
 }
 
+.member-badge {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+  color: #FF8C42;
+  background: #FFF8F0;
+  padding: 4rpx 14rpx;
+  border-radius: 100rpx;
+  margin-left: 8rpx;
+  font-weight: 500;
+}
+
+.member-badge.member-full {
+  color: #FFFFFF;
+  background: #FF4D4F;
+}
+
+.full-label {
+  font-weight: 700;
+  margin-left: 2rpx;
+}
+
 /* 标签 */
 .card-tags {
   display: flex;

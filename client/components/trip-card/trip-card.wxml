@@ -26,12 +26,18 @@
     <text class="dest-text">{{trip.destination}}</text>
   </view>
 
-  <!-- 日期 -->
+  <!-- 日期 + 人数 -->
   <view class="card-dates">
     <text class="date-icon">📅</text>
     <text class="date-text">{{startDateText}} — {{endDateText}}</text>
     <text class="date-days">{{days}}天</text>
-    <text class="member-info" wx:if="{{trip.maxMembers > 0}}">👥 {{trip.currentMembers || 1}}/{{trip.maxMembers}}</text>
+    <!-- 人数：始终显示 -->
+    <view class="member-badge {{trip.maxMembers > 0 && trip.currentMembers >= trip.maxMembers ? 'member-full' : ''}}">
+      <text>👥 {{trip.currentMembers || 1}}</text>
+      <text wx:if="{{trip.maxMembers > 0}}"> / {{trip.maxMembers}}</text>
+      <text wx:else> 人</text>
+      <text wx:if="{{trip.maxMembers > 0 && trip.currentMembers >= trip.maxMembers}}" class="full-label"> 满</text>
+    </view>
   </view>
 
   <!-- 标签 -->

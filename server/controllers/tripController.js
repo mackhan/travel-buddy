@@ -92,6 +92,27 @@ exports.getMine = async (req, res) => {
   } catch (err) { fail(res, '获取我的行程失败', 500) }
 }
 
+/** 我申请加入的行程（pending/approved/rejected 全部） */
+exports.getApplied = async (req, res) => {
+  try {
+    const { page, limit, skip } = parsePagination(req.query)
+    const memberStatus = req.query.status // 可选：pending/approved/rejected
+    const memberWhere = { userId: req.userId }
+    if (memberStatus) memberWhere.status = memberStatus
+
+    const { count, rows } = await TripMember.findAndCountAll({
+      where: memberWhere,
+      offset: skip, limit,
+      order: [['createdAt', 'DESC']],
+      include: [{
+        model: Trip, as: 'trip',
+        include: [{ model: User, as: 'user', attributes: userAttrs }]
+      }]
+    })
+    success(res, { list: rows, pagination: { page, limit, total: count, totalPages: Math.ceil(count / limit) } })
+  } catch (err) { fail(res, '获取申请行程失败', 500) }
+}
+
 exports.update = async (req, res) => {
   const t = await sequelize.transaction()
   let committed = false

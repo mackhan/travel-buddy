@@ -12,10 +12,13 @@ Page({
     showTrips: false,
     showReviews: false,
     reviewTab: 'received',   // 'received' | 'sent'
+    tripView: 'mine',        // 'mine' | 'applied'
     myTrips: [],
+    appliedTrips: [],        // 我申请的行程
     myReviews: [],      // 收到的评价
     sentReviews: [],    // 我写的评价
     tripStatus: '',
+    applyStatus: '',         // 申请状态筛选
     showEditBio: false,
     editBioValue: '',
     editNickname: ''
@@ -114,8 +117,43 @@ Page({
 
   // 我的行程
   async goMyTrips() {
-    this.setData({ showTrips: true, showReviews: false })
+    this.setData({ showTrips: true, showReviews: false, tripView: 'mine' })
     this.loadMyTrips()
+  },
+
+  switchTripView(e) {
+    const view = e.currentTarget.dataset.view
+    this.setData({ tripView: view })
+    if (view === 'mine') {
+      this.loadMyTrips()
+    } else {
+      this.loadAppliedTrips()
+    }
+  },
+
+  filterApplied(e) {
+    const status = e.currentTarget.dataset.status
+    this.setData({ applyStatus: status })
+    this.loadAppliedTrips()
+  },
+
+  async loadAppliedTrips() {
+    try {
+      const params = { limit: 50 }
+      if (this.data.applyStatus) params.status = this.data.applyStatus
+      const res = await get('/trips/applied', params)
+      const trips = (res.data.list || []).map(t => ({
+        ...t,
+        trip: t.trip ? {
+          ...t.trip,
+          startDateText: formatDate(t.trip.startDate, 'MM-DD'),
+          endDateText: formatDate(t.trip.endDate, 'MM-DD')
+        } : {}
+      }))
+      this.setData({ appliedTrips: trips })
+    } catch (e) {
+      console.error('加载申请行程失败', e)
+    }
   },
 
   async loadMyTrips() {
@@ -304,8 +342,32 @@ Page({
   showAbout() {
     wx.showModal({
       title: '旅行搭子',
-      content: '版本 1.0.35\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
+      content: '版本 1.0.36\n找到志同道合的旅伴，让旅行不再孤单 ✈️',
       showCancel: false
+    })
+  },
+
+  // 调试：切换账号（粘贴 token 直接登录另一个账号）
+  switchAccount() {
+    wx.showModal({
+      title: '🔧 切换账号（调试）',
+      content: '请粘贴目标账号的 Token，切换后将以该账号身份操作',
+      editable: true,
+      placeholderText: '粘贴 Token...',
+      confirmText: '切换',
+      cancelText: '取消',
+      success: (res) => {
+        if (!res.confirm || !res.content) return
+        const token = res.content.trim().replace(/^Bearer\s+/i, '')
+        if (!token) { wx.showToast({ title: 'Token 不能为空', icon: 'none' }); return }
+        wx.setStorageSync('token', token)
+        const app = getApp()
+        app.globalData.token = token
+        app.globalData.userInfo = null
+        this.setData({ isOtherUser: false, viewingUserId: null, showTrips: false, showReviews: false })
+        wx.showToast({ title: '切换成功', icon: 'success' })
+        setTimeout(() => this.loadProfile(), 800)
+      }
     })
   }
 })
