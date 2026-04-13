@@ -1,0 +1,20 @@
+name: Deploy to WeChat Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'server/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy via WeChat Cloud Run CLI
+        run: |
+          echo "后端代码已推送到 GitHub"
+          echo "请在微信云托管控制台手动触发部署，或配置自动部署"
+          echo "云托管环境: prod-1gs49bco623f3144"
+          echo "服务名: express-37pl"
