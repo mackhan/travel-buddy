@@ -1,5 +1,5 @@
 #!/bin/bash
-# 自动上传小程序（兼容 Node.js v22+，使用 miniprogram-ci）
+# 自动上传小程序（优先微信开发者工具 CLI，体验版自动更新）
 
 set -e
 
@@ -7,6 +7,7 @@ CLIENT_DIR="/Users/hanyufei/Documents/Git/travel-buddy/client"
 PROFILE_JS="$CLIENT_DIR/pages/profile/profile.js"
 KEY_FILE="/Users/hanyufei/Documents/Git/travel-buddy/private.wx6c88b825ea663fa8.key"
 APPID="wx6c88b825ea663fa8"
+DEVTOOLS_CLI="/Applications/wechatwebdevtools.app/Contents/MacOS/cli"
 
 # 读取当前版本号（从 profile.js 中提取）
 CURRENT=$(grep -o '版本 [0-9]*\.[0-9]*\.[0-9]*' "$PROFILE_JS" | grep -o '[0-9]*\.[0-9]*\.[0-9]*')
@@ -14,7 +15,7 @@ if [ -z "$CURRENT" ]; then
   CURRENT="1.0.1"
 fi
 
-# 版本号 patch +1（仅在未指定版本时自增）
+# 版本号由调用方传入，否则自动 patch +1
 if [ -n "$1" ]; then
   NEW_VERSION="$1"
 else
@@ -30,10 +31,20 @@ echo "📦 当前版本: $CURRENT → 新版本: $NEW_VERSION"
 # 更新 profile.js 里的版本号
 sed -i '' "s/版本 $CURRENT/版本 $NEW_VERSION/" "$PROFILE_JS"
 
-# 生成上传脚本（Node.js v22+ 兼容，禁用内置 localStorage）
+DESC_FULL="旅行搭子 v$NEW_VERSION - $DESC"
+
+# ===== 方案一：微信开发者工具 CLI（体验版自动更新）=====
+echo "🔄 尝试微信开发者工具 CLI 上传..."
+if "$DEVTOOLS_CLI" upload --project "$CLIENT_DIR" -v "$NEW_VERSION" -d "$DESC_FULL" 2>&1; then
+  echo "✅ 上传成功（开发者工具）！版本: $NEW_VERSION，体验版已自动更新"
+  exit 0
+fi
+
+echo "⚠️  开发者工具 CLI 失败，降级使用 miniprogram-ci..."
+
+# ===== 方案二：miniprogram-ci（需手动设体验版）=====
 UPLOAD_SCRIPT="/tmp/upload_mp_$$.js"
 cat > "$UPLOAD_SCRIPT" << JSEOF
-// 修复 Node.js v22+ 内置 localStorage 与 miniprogram-ci 的兼容问题
 delete global.localStorage;
 const ci = require('/opt/homebrew/lib/node_modules/miniprogram-ci');
 const path = require('path');
@@ -47,11 +58,11 @@ const project = new ci.Project({
 ci.upload({
   project,
   version: '$NEW_VERSION',
-  desc: '旅行搭子 v$NEW_VERSION - $DESC',
-  setting: { es6: true, minify: true, minifyWXML: true, minifyWXSS: true },
-  onProgressUpdate: (t) => { if (t._msg) process.stdout.write('[进度] ' + t._msg + '\\n'); }
+  desc: '$DESC_FULL',
+  setting: { es6: true, minify: true, minifyWXML: true, minifyWXSS: true }
 }).then(r => {
-  console.log('✅ 上传成功！版本: $NEW_VERSION');
+  console.log('✅ 上传成功（miniprogram-ci）！版本: $NEW_VERSION');
+  console.log('⚠️  注意：需要去公众平台手动将 v$NEW_VERSION 设为体验版');
   process.exit(0);
 }).catch(e => {
   console.error('❌ 上传失败:', e.message || e);
@@ -59,12 +70,10 @@ ci.upload({
 });
 JSEOF
 
-# 使用 --no-experimental-webstorage 禁用 Node.js 内置 localStorage
 if node --no-experimental-webstorage "$UPLOAD_SCRIPT" 2>&1; then
-  echo "✅ 版本 $NEW_VERSION 已上传到微信后台"
   rm -f "$UPLOAD_SCRIPT"
 else
-  echo "❌ 上传失败，回滚版本号"
+  echo "❌ 两种方式均失败，回滚版本号"
   sed -i '' "s/版本 $NEW_VERSION/版本 $CURRENT/" "$PROFILE_JS"
   rm -f "$UPLOAD_SCRIPT"
   exit 1
