@@ -30,7 +30,7 @@
   </view>
 
   <!-- 发布者信息 -->
-  <view class="section user-section" bindtap="viewProfile">
+  <view class="section user-section" bindtap="viewProfile" data-user-id="{{trip.user.id || trip.user._id}}">
     <image class="user-avatar" src="{{trip.user.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
     <view class="user-info">
       <view class="user-name">{{trip.user.nickname || '旅行者'}}</view>
@@ -61,7 +61,7 @@
         wx:for="{{members}}"
         wx:key="id"
         bindtap="viewMemberProfile"
-        data-user-id="{{item.user.id}}"
+        data-user-id="{{item.user.id || item.user._id}}"
       >
         <image class="member-avatar" src="{{item.user.avatar || '/assets/default-avatar.png'}}" mode="aspectFill" />
         <view class="member-info-col">
@@ -78,7 +78,7 @@
         <!-- 行程进行中，当前用户是自己（非行程主），显示退出按钮 -->
         <view
           class="leave-btn-small"
-          wx:if="{{trip.status === 'active' && !isOwner && item.user.id == myId}}"
+          wx:if="{{trip.status === 'active' && !isOwner && (item.user.id == myId || item.user._id == myId)}}"
           catchtap="leaveTrip"
         >退出</view>
       </view>

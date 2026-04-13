@@ -106,7 +106,14 @@ Page({
         // 更新对方头像
         if (sender.avatar) this.setData({ otherAvatar: sender.avatar })
 
-        const messages = markTimeFlags([...this.data.messages, { ...msg, sender, isMine: false }])
+        // apply 消息需要解析 applyData，且 isOwnerView=true（收到方就是行程主）
+        let parsed = { ...msg, sender, isMine: false }
+        if (msg.type === 'apply') {
+          try { parsed.applyData = JSON.parse(msg.content) } catch (e) { parsed.applyData = {} }
+          parsed.isOwnerView = true
+        }
+
+        const messages = markTimeFlags([...this.data.messages, parsed])
         this.setData({ messages })
         this.scrollToBottom()
         socket.send('chat:read', { conversationId: this.data.conversationId })
@@ -117,9 +124,15 @@ Page({
     // 监听发送确认
     this.onSentConfirm = (msg) => {
       if (msg.conversationId === this.data.conversationId) {
+        // apply 消息：解析 applyData，isOwnerView=false（发送方是申请人）
+        let parsed = { ...msg, isMine: true }
+        if (msg.type === 'apply') {
+          try { parsed.applyData = JSON.parse(msg.content) } catch (e) { parsed.applyData = {} }
+          parsed.isOwnerView = false
+        }
         const messages = markTimeFlags(this.data.messages.map(m => {
           if (m._id && String(m._id).startsWith('temp_') && m.content === msg.content) {
-            return { ...msg, isMine: true }
+            return parsed
           }
           return m
         }))

@@ -231,11 +231,11 @@ Page({
     wx.navigateTo({ url: `/pages/publish/publish?prefill=${params}` })
   },
 
-  viewProfile() {
-    const author = this.data.trip && this.data.trip.user
-    if (!author) return
-    const id = author.id || author._id
-    if (!id) { console.warn('[viewProfile] author.id 为空', author); return }
+  viewProfile(e) {
+    // 优先取 data-user-id（已在 wxml 里绑定），兜底取 trip.user
+    const id = (e && e.currentTarget && e.currentTarget.dataset.userId)
+      || (this.data.trip && this.data.trip.user && (this.data.trip.user.id || this.data.trip.user._id))
+    if (!id || id === 'undefined') { console.warn('[viewProfile] userId 为空'); return }
     wx.navigateTo({ url: `/pages/profile/profile?userId=${id}` })
   },
 

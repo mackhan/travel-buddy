@@ -1,6 +1,6 @@
 {
   "name": "travel-buddy-server",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "旅行搭子小程序后端服务",
   "main": "app.js",
   "scripts": {
