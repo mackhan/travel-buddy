@@ -249,10 +249,15 @@ Page({
   },
 
   viewMemberProfile(e) {
-    const userId = e.currentTarget.dataset.userId
+    let userId = e.currentTarget.dataset.userId
+    // 多层 fallback
+    if (!userId || String(userId) === 'undefined') {
+      const dataset = e.currentTarget.dataset
+      userId = dataset.itemUserId || dataset.userid
+    }
     console.log('[viewMemberProfile] userId=', userId)
     if (!userId || String(userId) === 'undefined') {
-      wx.showToast({ title: '用户信息加载中', icon: 'none' })
+      wx.showToast({ title: '用户信息加载中，请稍后重试', icon: 'none' })
       return
     }
     wx.navigateTo({
